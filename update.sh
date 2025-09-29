@@ -8,7 +8,7 @@ set -e  # Exit on any error
 echo "� Starting Homepage deployment update..."
 
 # Configuration
-REPO_URL="https://github.com/YOUR_USERNAME/Homepage.git"  # Update this with your GitHub repo
+REPO_URL="https://github.com/Gallogeta/Homepage.git"
 PROJECT_DIR="/home/gallo/Homepage"
 BACKUP_DIR="/home/gallo/Homepage_backup_$(date +%Y%m%d_%H%M%S)"
 
