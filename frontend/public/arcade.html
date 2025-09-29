@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arcade - Play NES/SNES Games</title>
+  <link rel="stylesheet" href="arcade-modern.css" />
+  <link rel="stylesheet" href="button-styles.css" />
+  <style>
+  body { background: #000; color: #ffd700; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; }
+    .arcade-header { text-align: center; font-size: 2.5rem; margin: 2rem 0 1rem 0; letter-spacing: 0.2em; }
+    .arcade-menu { position: fixed; right: 0; top: 0; width: 320px; height: 100vh; background: #181818ee; border-left: 2px solid #ffd700; display: flex; flex-direction: column; align-items: center; padding-top: 2rem; z-index: 10; }
+    .arcade-menu h2 { color: #ffd700; margin-bottom: 1rem; }
+    .game-list { width: 90%; }
+    .game-btn { width: 100%; background: #222; color: #ffd700; border: 1px solid #ffd700; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; font-size: 1.1rem; cursor: pointer; transition: background 0.2s; }
+    .game-btn.selected, .game-btn:hover { background: #ffd700; color: #111; }
+    .arcade-main { margin-right: 340px; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .arcade-canvas-wrap { position: relative; margin-top: 2rem; }
+    .arcade-canvas { border: 3px solid #ffd700; border-radius: 12px; background: #000; display: block; }
+    .fullscreen-btn { position: absolute; top: 10px; right: 10px; background: #ffd700; color: #111; border: none; border-radius: 6px; padding: 0.5rem 1rem; font-size: 1rem; cursor: pointer; }
+    .music-player { margin-top: 2rem; }
+    .arcade-error { color: #ff4444; margin-top: 1rem; font-size: 1.1rem; }
+  </style>
+</head>
+<body>
+  <div class="arcade-header">Arcade</div>
+  
+  <!-- Mobile Controls (visible only on mobile) -->
+  <div class="mobile-controls" style="display: none;">
+    <button class="mobile-dropdown-toggle" id="games-toggle">
+      Games <span>▼</span>
+    </button>
+    <div class="mobile-dropdown-content" id="games-dropdown">
+      <div class="game-list" id="mobile-game-list"></div>
+    </div>
+    
+    <button class="mobile-dropdown-toggle" id="music-toggle">
+      Music <span>▼</span>
+    </button>
+    <div class="mobile-dropdown-content" id="music-dropdown">
+      <audio id="mobile-arcade-music" class="music-player" controls style="width: 100%; margin: 10px 0;"></audio>
+      <div class="music-list" id="mobile-music-list"></div>
+    </div>
+    
+    <!-- Mobile fullscreen button -->
+    <button class="mobile-fullscreen-btn order-btn" id="mobile-fullscreen-btn">Fullscreen</button>
+  </div>
+
+  <div class="arcade-layout">
+    <!-- Desktop Layout -->
+    <div class="arcade-col left">
+      <h2 class="games-title">Games</h2>
+      <div class="game-list" id="game-list"></div>
+    </div>
+    <div class="arcade-col center">
+      <iframe
+        id="emulator-frame"
+        src="/emulatorjs/indexe.html"
+        class="emulator-frame"
+        allowfullscreen
+        title="EmulatorJS"
+      ></iframe>
+      <button class="fullscreen-btn" id="fullscreen-btn">Fullscreen</button>
+      <!-- Exit fullscreen button (hidden by default) -->
+      <button class="exit-fullscreen-btn hidden" id="exit-fullscreen-btn">Exit Fullscreen</button>
+    </div>
+    <div class="arcade-col right">
+      <h2 class="music-title">Music</h2>
+      <audio id="arcade-music" class="music-player" controls></audio>
+      <div class="music-list" id="music-list"></div>
+    </div>
+  </div>
+  <script src="arcade-menu.js"></script>
+  <script>
+    // Fullscreen functionality for iframe
+    document.addEventListener('DOMContentLoaded', function() {
+      const fullscreenBtn = document.getElementById('fullscreen-btn');
+      const mobileFullscreenBtn = document.getElementById('mobile-fullscreen-btn');
+      const exitFullscreenBtn = document.getElementById('exit-fullscreen-btn');
+      const frame = document.getElementById('emulator-frame');
+      
+      // Enter fullscreen function
+      function enterFullscreen() {
+        if (frame.requestFullscreen) {
+          frame.requestFullscreen();
+        } else if (frame.webkitRequestFullscreen) {
+          frame.webkitRequestFullscreen();
+        } else if (frame.mozRequestFullScreen) {
+          frame.mozRequestFullScreen();
+        } else if (frame.msRequestFullscreen) {
+          frame.msRequestFullscreen();
+        }
+      }
+      
+      // Desktop fullscreen button
+      if (fullscreenBtn) {
+        fullscreenBtn.onclick = enterFullscreen;
+      }
+      
+      // Mobile fullscreen button
+      if (mobileFullscreenBtn) {
+        mobileFullscreenBtn.onclick = enterFullscreen;
+      }
+      
+      // Exit fullscreen
+      exitFullscreenBtn.onclick = function() {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        } else if (document.mozCancelFullScreen) {
+          document.mozCancelFullScreen();
+        } else if (document.msExitFullscreen) {
+          document.msExitFullscreen();
+        }
+      };
+      
+      // Listen for fullscreen changes to show/hide exit button
+      function handleFullscreenChange() {
+        const isFullscreen = document.fullscreenElement || 
+                            document.webkitFullscreenElement || 
+                            document.mozFullScreenElement || 
+                            document.msFullscreenElement;
+        
+        if (isFullscreen) {
+          exitFullscreenBtn.classList.remove('hidden');
+          exitFullscreenBtn.style.display = 'block';
+        } else {
+          exitFullscreenBtn.classList.add('hidden');
+          exitFullscreenBtn.style.display = 'none';
+        }
+      }
+      
+      // Add event listeners for fullscreen change
+      document.addEventListener('fullscreenchange', handleFullscreenChange);
+      document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+      document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+    });
+  </script>
+</body>
+</html>

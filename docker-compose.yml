@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: homepage_backend
+    restart: unless-stopped
+    volumes:
+      - ./backend:/app  # Bind mount for easy code updates
+      - uploads_data:/app/uploads  # Persistent volume for uploads/media
+      - db_data:/app/data  # Persistent volume for database
+    environment:
+      - DATABASE_URL=sqlite:///./data/db.sqlite3
+    env_file:
+      - ./backend/.env
+    ports:
+      - "8000:8000"
+    networks:
+      - homepage_network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: homepage_frontend
+    restart: unless-stopped
+    volumes:
+      - ./frontend:/app  # Bind mount for easy updates
+      - frontend_build:/app/dist  # Built files
+    ports:
+      - "3000:3000"
+    networks:
+      - homepage_network
+    depends_on:
+      - backend
+
+  nginx:
+    image: nginx:alpine
+    container_name: homepage_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx-http.conf:/etc/nginx/nginx.conf:ro
+      - uploads_data:/var/www/uploads:ro  # Serve uploads directly
+      - frontend_build:/var/www/html:ro   # Serve frontend
+    networks:
+      - homepage_network
+    depends_on:
+      - backend
+      - frontend
+
+volumes:
+  uploads_data:
+    driver: local
+  db_data:
+    driver: local
+  frontend_build:
+    driver: local
+
+networks:
+  homepage_network:
+    driver: bridge

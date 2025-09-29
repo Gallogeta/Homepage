@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>itsusi.eu - Portfolio</title>
+  <meta name="description" content="Portfolio and projects by ItSusi: creations, work history, contact, arcade, and more." />
+  <link rel="canonical" href="https://itsusi.eu/" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="itsusi.eu" />
+  <meta property="og:title" content="itsusi.eu - Portfolio" />
+  <meta property="og:description" content="Portfolio and projects by ItSusi: creations, work history, contact, arcade, and more." />
+  <meta property="og:url" content="https://itsusi.eu/" />
+  <!-- Using existing logo as og:image as requested -->
+  <meta property="og:image" content="/media/pics/logo.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <!-- PWA / Theming -->
+  <meta name="theme-color" content="#000000" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <link rel="apple-touch-icon" href="/favicon.svg" />
+  
+  <!-- Global styles from public/ (Vite copies as-is) -->
+  <link rel="stylesheet" href="/button-styles.css" />
+  <link rel="stylesheet" href="/quill-public.css" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      // Runtime API base for dev; override with VITE_API_BASE in build
+      window.API_BASE = window.API_BASE || (location.port === '5173' ? 'http://192.168.0.90' : undefined);
+    </script>
+    <script type="module" src="/main.jsx"></script>
+  </body>
+</html>

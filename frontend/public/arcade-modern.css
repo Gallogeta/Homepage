@@ -1,0 +1,179 @@
+.pseudo-fullscreen {
+	position: fixed !important;
+	top: 0;
+	left: 0;
+	width: 100vw !important;
+	height: 100vh !important;
+	z-index: 9999;
+	border: 6px solid #ffd700 !important;
+	border-radius: 18px;
+	box-shadow: 0 0 60px #ffd70099;
+	background: #111;
+	margin: 0 !important;
+	padding: 0 !important;
+	display: block;
+}
+#emulator-frame:fullscreen {
+	border: 3px solid #ffd700 !important;
+	border-radius: 16px;
+	box-shadow: 0 0 40px #ffd70055;
+}
+body { background: #111; color: #ffd700; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; }
+.arcade-header { 
+	text-align: center; 
+	font-size: 1.8rem; 
+	margin: 0; 
+	letter-spacing: 0.2em;
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	background: #111;
+	padding: 0.8rem;
+	z-index: 100;
+	border-bottom: 1px solid #ffd700;
+}
+.arcade-layout { 
+	display: flex; 
+	flex-direction: row; 
+	justify-content: center; 
+	align-items: flex-start; 
+	min-height: 80vh; 
+	padding-top: 80px; /* Account for fixed header */
+}
+.arcade-col { display: flex; flex-direction: column; align-items: center; padding: 2rem 1rem; }
+.arcade-col.left { width: 240px; min-width: 180px; background: #000; border-right: 1px solid #ffd700; min-height: 735px; }
+.arcade-col.center { flex: 1; align-items: center; justify-content: center; }
+.arcade-col.right { width: 240px; min-width: 180px; background: #000; border-left: 1px solid #ffd700; min-height: 735px; }
+.music-title, .games-title { color: #ffd700; }
+.game-btn { background: #000 !important; }
+.game-list, .music-list { width: 98%; display: flex; flex-direction: column; gap: 0.3rem; margin-top: 0.5rem; }
+#emulator-frame { width: 900px; height: 650px; border: 3px solid #ffd700; border-radius: 16px; background: #000; box-shadow: 0 0 40px #ffd70055; margin: 0 2rem; }
+.fullscreen-btn { margin: 1.5rem auto 0 auto; display: block; background: #ffd700; color: #111; border: none; border-radius: 8px; padding: 0.75rem 2.5rem; font-size: 1.2rem; font-weight: bold; cursor: pointer; box-shadow: 0 0 10px #ffd70055; transition: background 0.2s, color 0.2s; }
+.fullscreen-btn:hover { background: #fff700; color: #000; }
+
+/* Exit fullscreen button - positioned as overlay when in fullscreen */
+.exit-fullscreen-btn {
+	position: fixed;
+	top: 20px;
+	right: 20px;
+	z-index: 9999;
+	background: rgba(255, 215, 0, 0.95);
+	color: #111;
+	border: none;
+	border-radius: 8px;
+	padding: 8px 16px;
+	font-size: 14px;
+	font-weight: bold;
+	cursor: pointer;
+	-webkit-backdrop-filter: blur(5px);
+	backdrop-filter: blur(5px);
+	box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+	transition: all 0.2s ease;
+}
+.exit-fullscreen-btn:hover {
+	background: rgba(204, 165, 0, 0.95);
+	transform: scale(1.05);
+}
+.exit-fullscreen-btn.hidden {
+	display: none !important;
+}
+.music-player {
+	width: 100%;
+	margin: 1rem 0 0 0;
+	border-radius: 1px;
+	background: #111;
+	border: 1px solid #ffd700;
+	box-shadow: 0 0 20px #ffd70055;
+	color: #ffd700;
+	padding: 0.25rem 0.5rem;
+}
+
+.music-player::-webkit-media-controls-panel {
+	background: #ffd700;
+	color: #ffd700;
+	border-radius: 12px;
+}
+.music-player::-webkit-media-controls-play-button,
+.music-player::-webkit-media-controls-volume-slider,
+.music-player::-webkit-media-controls-mute-button {
+	filter: hue-rotate(45deg) brightness(1.2) saturate(2);
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+	.arcade-header {
+		display: none !important;
+	}
+	
+	.arcade-layout {
+		flex-direction: column;
+		margin-top: 0;
+		min-height: 100vh;
+		padding: 0; /* No header to account for */
+	}
+	
+	/* Hide desktop columns on mobile */
+	.arcade-col.left,
+	.arcade-col.right {
+		display: none;
+	}
+	
+	/* Mobile controls positioned at top - more compact */
+	.mobile-controls {
+		width: 100%;
+		padding: 8px;
+		background: rgba(17, 17, 17, 0.95);
+		border-bottom: 1px solid var(--gold, #ffd700);
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		z-index: 150;
+		-webkit-backdrop-filter: blur(10px);
+		backdrop-filter: blur(10px);
+		display: block !important; /* Override inline style */
+	}
+	
+	.arcade-col.center {
+		width: 100%;
+		padding: 10px;
+		margin-top: 140px; /* Account for mobile controls + dropdowns */
+		flex: none;
+	}
+	
+	/* Mobile emulator sizing */
+	#emulator-frame {
+		width: calc(100vw - 20px) !important;
+		height: calc((100vw - 20px) * 0.75) !important;
+		max-width: 350px !important;
+		max-height: 262px !important;
+		margin: 0 !important;
+		border: 2px solid #ffd700;
+	}
+	
+	.fullscreen-btn {
+		margin: 10px auto;
+		padding: 8px 16px;
+		font-size: 14px;
+	}
+	
+	/* Mobile game/music buttons */
+	.game-btn,
+	.music-btn {
+		font-size: 14px !important;
+		padding: 8px 12px !important;
+		margin: 2px 0 !important;
+	}
+	
+	.music-player {
+		width: calc(100% - 20px);
+		margin: 10px;
+	}
+	
+	/* Pseudo fullscreen adjustments for mobile */
+	.pseudo-fullscreen {
+		border: 3px solid #ffd700 !important;
+		border-radius: 12px !important;
+	}
+}

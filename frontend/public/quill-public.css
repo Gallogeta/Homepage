@@ -1,0 +1,13 @@
+/* Quill CSS for rendering formatted content (viewer side) */
+@import url('https://cdn.quilljs.com/1.3.7/quill.core.css');
+@import url('https://cdn.quilljs.com/1.3.7/quill.snow.css');
+
+/* Light tweaks/fallbacks to ensure formatting survives Tailwind defaults */
+.ql-align-center { text-align: center; }
+.ql-align-right { text-align: right; }
+.ql-align-justify { text-align: justify; }
+
+/* Common size helpers if core CSS isn’t enough in some themes */
+.ql-size-small { font-size: 0.85em; }
+.ql-size-large { font-size: 1.5em; }
+.ql-size-huge  { font-size: 2.25em; }

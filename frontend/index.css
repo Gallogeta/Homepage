@@ -1,0 +1,154 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --gold: #bfa43a;
+  --gold-dim: #bfa43a33;
+}
+
+/* Mobile-first responsive improvements */
+@media (max-width: 768px) {
+  .menu-btn {
+    font-size: 0.9rem;
+    padding: 0.6rem 0.8rem; /* Larger touch targets */
+    min-height: 44px; /* Apple recommended touch target size */
+  }
+  
+  .header-btn {
+    font-size: 0.8rem;
+    padding: 0.5rem 0.6rem;
+    min-height: 44px;
+  }
+  
+  /* Improve text readability on mobile */
+  .page-bg {
+    font-size: 0.9rem !important;
+    line-height: 1.6;
+  }
+  
+  /* Better button spacing on mobile */
+  .order-btn {
+    width: 100% !important;
+    max-width: 280px;
+    margin: 0.5rem 0;
+    min-height: 44px;
+  }
+  
+  /* Ensure mobile menu is properly positioned */
+  aside {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Better spacing for mobile content */
+  section {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+}
+
+.menu-btn {
+  color: var(--gold);
+  border: 1px solid var(--gold-dim);
+  background: transparent;
+  font-size: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0; /* No round edges */
+  margin-bottom: 0.5rem;
+  transition: color 0.3s, background 0.3s, border-color 0.7s, box-shadow 0.4s cubic-bezier(0.4,0,0.2,1);
+  width: 100%;
+  text-align: center;
+  display: block;
+  box-shadow: none;
+}
+.menu-btn.active {
+  color: var(--gold);
+  background: rgba(191, 164, 58, 0.08);
+  border-color: var(--gold);
+}
+.menu-btn:hover, .menu-btn:focus {
+  color: #fff;
+  background: rgba(191, 164, 58, 0.18);
+  border-color: var(--gold);
+  box-shadow: 0 0 16px 2px rgba(191,164,58,0.18), 0 0 32px 8px rgba(191,164,58,0.08);
+  z-index: 1;
+}
+.header-btn {
+  color: var(--gold);
+  padding: 0.5rem 1rem;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 0; /* No round edges */
+  transition: color 0.3s, background 0.3s, box-shadow 0.4s cubic-bezier(0.4,0,0.2,1), border-color 0.7s cubic-bezier(0.4,0,0.2,1);
+  font-size: 1rem;
+  box-shadow: none;
+  position: relative;
+}
+.header-btn.active {
+  color: var(--gold);
+  background: transparent;
+  border-color: var(--gold);
+  animation: borderGlow 1.5s infinite alternate;
+}
+.header-btn:hover, .header-btn:focus {
+  color: #fff;
+  background: rgba(191, 164, 58, 0.08);
+  border-color: var(--gold);
+  animation: borderGlow 1.5s infinite alternate;
+  z-index: 1;
+}
+@keyframes borderGlow {
+  0% { border-color: var(--gold-dim); }
+  100% { border-color: var(--gold); }
+}
+body {
+  background: #000;
+}
+.text-gold {
+  color: var(--gold);
+}
+.border-gold {
+  border-color: var(--gold);
+}
+.border-gold-dim {
+  border-color: var(--gold-dim);
+}
+.bg-black {
+  background: #000;
+}
+.bg-future {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(120deg, rgba(30,30,40,0.7) 60%, rgba(80,80,120,0.2) 100%),
+    repeating-linear-gradient(135deg, rgba(191,164,58,0.07) 0 2px, transparent 2px 40px),
+    repeating-linear-gradient(45deg, rgba(191,164,58,0.04) 0 1px, transparent 1px 30px);
+  filter: blur(8px) brightness(1.1) contrast(1.1);
+  opacity: 0.85;
+}
+
+.page-bg {
+  background: #000 !important;
+}
+
+@media (max-width: 768px) {
+  .min-h-screen { min-height: 100vh; }
+  aside { position: fixed; left: 0; top: 0; height: 100vh; z-index: 20; width: 70vw; max-width: 320px; }
+  main { margin-left: 70vw; }
+  .header-btn, .menu-btn { font-size: 1rem; }
+}
+
+header nav {
+  margin: 0 auto;
+}
+@media (min-width: 768px) {
+  header nav {
+    justify-content: center;
+    display: flex;
+    width: 100%;
+    gap: 2.5rem;
+  }
+}

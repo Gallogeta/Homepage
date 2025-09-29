@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Linux Terminal</title>
+  <style>
+    body {
+      background: #000000;
+      color: #ffd700;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+    }
+    .sandbox-container {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      justify-content: center;
+      width: 100vw;
+      max-width: 100vw;
+      box-sizing: border-box;
+      padding: 2rem 0 0 0;
+      gap: 2rem;
+    }
+    .sandbox-header {
+      font-size: 2.5rem;
+      margin: 0 0 2rem 0;
+      letter-spacing: 0.2em;
+      color: #ffd700;
+      text-align: left;
+      padding-left: 2rem;
+    }
+    .sandbox-intro {
+  width: 340px;
+  min-width: 260px;
+  max-width: 340px;
+  background: #000;
+  border: none;
+  border-radius: 0px;
+  padding: 1.5rem 1.2rem;
+  color: #ffd700;
+  font-size: 1.1rem;
+  margin: 0;
+  height: 600px;
+  overflow-y: auto;
+    }
+    .sandbox-terminal {
+      width: 800px;
+      min-width: 800px;
+      max-width: 1200px;
+      height: 700px;
+      background: #000;
+      border: 1px solid #ffd700;
+      border-radius: 0px;
+      box-shadow: 0 0 40px #00000033;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: flex-start;
+    }
+    .sandbox-terminal iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #000;
+      border-radius: 0px;
+      display: block;
+    }
+    .sandbox-footer {
+      color: #ffd70099;
+      font-size: 0.95rem;
+      margin-top: 2rem;
+      text-align: center;
+      width: 100vw;
+    }
+    @media (max-width: 1200px) {
+      .sandbox-terminal { width: 98vw; min-width: unset; max-width: 100vw; }
+      .sandbox-container { flex-direction: column; align-items: center; }
+      .sandbox-intro { width: 98vw; max-width: 98vw; min-width: unset; height: auto; margin-bottom: 2rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="sandbox-header">Linux Sandbox Terminal</div>
+  <div class="sandbox-container">
+    <div class="sandbox-intro">
+      <b>Welcome to the Linux Sandbox!</b><br>
+      This is a fully client-side Linux terminal running in your browser. You can try basic Linux commands, scripting, and file operations. No changes are made to any real system, and all data is lost on refresh.<br><br>
+      <b>Usage Tips:</b>
+      <ul>
+        <li>Try commands like <code>ls</code>, <code>cat</code>, <code>echo</code>, <code>vi</code>, <code>gcc</code> (if supported).</li>
+        <li>All operations are sandboxed and safe.</li>
+        <li>Performance may vary depending on your browser and device.</li>
+      </ul>
+    </div>
+    <div class="sandbox-terminal">
+      <iframe id="jslinux-frame" src="https://bellard.org/jslinux/vm.html?url=alpine-x86.cfg"></iframe>
+    </div>
+  </div>
+  <div class="sandbox-footer">
+    
+    <b>Note:</b> This is a demo environment. No real system changes are made.
+  </div>
+</body>
+</html>
