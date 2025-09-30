@@ -782,7 +782,7 @@ async def register(req: RegisterRequest, request: FastAPIRequest, db: Session = 
     return {"msg": "User registered successfully. Check your email to verify."}
 
 # Admin endpoints
-@app.get("/admin/users")
+@app.get("/api/admin/users")
 def list_users(_: str = Depends(admin_required), db: Session = Depends(get_db)):
     users = db.query(User).all()
     return [{"username": u.username, "email": u.email, "is_verified": u.is_verified, "is_approved": u.is_approved, "role": u.role} for u in users]
