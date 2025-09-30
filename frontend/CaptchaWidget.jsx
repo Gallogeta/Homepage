@@ -1,83 +1,63 @@
-import React, { useEffect, useRef, useState } from "react";
-
-// Detect site keys from env or global. Prefer Turnstile; fall back to hCaptcha.
-const TURNSTILE_SITEKEY = (import.meta?.env?.VITE_TURNSTILE_SITEKEY) || (typeof window !== 'undefined' && window.TURNSTILE_SITEKEY);
-const HCAPTCHA_SITEKEY = (import.meta?.env?.VITE_HCAPTCHA_SITEKEY) || (typeof window !== 'undefined' && window.HCAPTCHA_SITEKEY);
+import React, { useState, useEffect } from "react";
 
 export default function CaptchaWidget({ onToken, onExpired, className = "" }) {
-  const containerRef = useRef(null);
-  const [provider, setProvider] = useState(null); // 'turnstile' | 'hcaptcha' | null
+  const [num1, setNum1] = useState(0);
+  const [num2, setNum2] = useState(0);
+  const [operator, setOperator] = useState('+');
+  const [answer, setAnswer] = useState('');
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    if (TURNSTILE_SITEKEY) setProvider('turnstile');
-    else if (HCAPTCHA_SITEKEY) setProvider('hcaptcha');
-    else setProvider(null);
+    generateCaptcha();
   }, []);
 
-  useEffect(() => {
-    let script;
-    let widgetId;
-    let canceled = false;
+  const generateCaptcha = () => {
+    const n1 = Math.floor(Math.random() * 10) + 1;
+    const n2 = Math.floor(Math.random() * 10) + 1;
+    const ops = ['+', '-'];
+    const op = ops[Math.floor(Math.random() * ops.length)];
+    setNum1(n1);
+    setNum2(n2);
+    setOperator(op);
+    setAnswer('');
+    setError('');
+  };
 
-    const cleanup = () => {
-      try {
-        if (provider === 'turnstile' && widgetId && window.turnstile) {
-          window.turnstile.remove(widgetId);
-        }
-        if (provider === 'hcaptcha' && window.hcaptcha && containerRef.current) {
-          // hCaptcha auto-cleans with container removal; no explicit remove API needed.
-        }
-      } catch {}
-      if (script && script.parentNode) script.parentNode.removeChild(script);
-    };
+  const calculateAnswer = () => {
+    if (operator === '+') return num1 + num2;
+    if (operator === '-') return num1 - num2;
+    return 0;
+  };
 
-    const renderTurnstile = () => {
-      if (!containerRef.current || !window.turnstile) return;
-      widgetId = window.turnstile.render(containerRef.current, {
-        sitekey: TURNSTILE_SITEKEY,
-        callback: (token) => onToken && onToken(token),
-        'expired-callback': () => onExpired && onExpired(),
-        'error-callback': () => onExpired && onExpired(),
-        theme: 'dark',
-      });
-    };
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const correct = calculateAnswer();
+    if (parseInt(answer) === correct) {
+      onToken && onToken('verified');
+      setError('');
+    } else {
+      setError('Incorrect answer. Try again.');
+      generateCaptcha();
+    }
+  };
 
-    const renderHCaptcha = () => {
-      if (!containerRef.current || !window.hcaptcha) return;
-      window.hcaptcha.render(containerRef.current, {
-        sitekey: HCAPTCHA_SITEKEY,
-        callback: (token) => onToken && onToken(token),
-        'expired-callback': () => onExpired && onExpired(),
-        'error-callback': () => onExpired && onExpired(),
-        theme: 'dark',
-      });
-    };
-
-    const ensureScriptAndRender = () => {
-      if (provider === 'turnstile') {
-        if (window.turnstile) { renderTurnstile(); return; }
-        script = document.createElement('script');
-        script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
-        script.async = true;
-        script.defer = true;
-        script.onload = () => { if (!canceled) renderTurnstile(); };
-        document.head.appendChild(script);
-      } else if (provider === 'hcaptcha') {
-        if (window.hcaptcha) { renderHCaptcha(); return; }
-        script = document.createElement('script');
-        script.src = 'https://hcaptcha.com/1/api.js?render=explicit';
-        script.async = true;
-        script.defer = true;
-        script.onload = () => { if (!canceled) renderHCaptcha(); };
-        document.head.appendChild(script);
-      }
-    };
-
-    if (provider) ensureScriptAndRender();
-
-    return () => { canceled = true; cleanup(); };
-  }, [provider]);
-
-  if (!provider) return null; // No site key configured
-  return <div ref={containerRef} className={className} />;
+  return (
+    <div className={`captcha-widget ${className}`}>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+        <div className="text-gold">
+          What is {num1} {operator} {num2}?
+        </div>
+        <input
+          type="number"
+          value={answer}
+          onChange={(e) => setAnswer(e.target.value)}
+          className="bg-black border border-gold px-2 py-1 text-gold focus:outline-none"
+          placeholder="Answer"
+          required
+        />
+        {error && <div className="text-red-500">{error}</div>}
+        <button type="submit" className="header-btn">Verify</button>
+      </form>
+    </div>
+  );
 }

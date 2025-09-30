@@ -13,7 +13,6 @@ window.addEventListener('DOMContentLoaded', function() {
     { name: "Mega Man", file: "/api/snes/Mega-Man.nes" },
     { name: "Ninja Gaiden 3", file: "/api/snes/Ninja_gaiden3.nes" },
     { name: "Rescue Rangers 2", file: "/api/snes/rescue_rangers2.nes" },
-    { name: "Super Mario Bros 3", file: "/api/snes/Super-Mario-Bros-3.nes" },
     { name: "Super Mario Brothers", file: "/api/snes/Super_mario_brothers.nes" },
     { name: "Teenage Mutant Ninja Turtles", file: "/api/snes/Teenage_mutant_ninja_turtles.nes" },
     { name: "Teenage Mutant Ninja Turtles 3", file: "/api/snes/Teenage_mutant_ninja_turtles3.nes" },

@@ -65,7 +65,6 @@ const menuItems = [
 // Left sidebar menu items
 const leftMenuItems = [
   { key: "placeholder2", label: "Infra Map" },
-  { key: "terminal", label: "Terminal", href: "/terminal.html" },
   { key: "placeholder1", label: "Sysadmin Dashboard" },
   { key: "arcade", label: "Arcade", href: "/arcade.html" },
 ];

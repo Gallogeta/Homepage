@@ -8,12 +8,9 @@
   <link rel="stylesheet" href="button-styles.css" />
   <style>
   body { background: #000; color: #ffd700; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; }
-    .arcade-header { text-align: center; font-size: 2.5rem; margin: 2rem 0 1rem 0; letter-spacing: 0.2em; }
     .arcade-menu { position: fixed; right: 0; top: 0; width: 320px; height: 100vh; background: #181818ee; border-left: 2px solid #ffd700; display: flex; flex-direction: column; align-items: center; padding-top: 2rem; z-index: 10; }
     .arcade-menu h2 { color: #ffd700; margin-bottom: 1rem; }
     .game-list { width: 90%; }
-    .game-btn { width: 100%; background: #222; color: #ffd700; border: 1px solid #ffd700; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; font-size: 1.1rem; cursor: pointer; transition: background 0.2s; }
-    .game-btn.selected, .game-btn:hover { background: #ffd700; color: #111; }
     .arcade-main { margin-right: 340px; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     .arcade-canvas-wrap { position: relative; margin-top: 2rem; }
     .arcade-canvas { border: 3px solid #ffd700; border-radius: 12px; background: #000; display: block; }
@@ -23,29 +20,7 @@
   </style>
 </head>
 <body>
-  <div class="arcade-header">Arcade</div>
   
-  <!-- Mobile Controls (visible only on mobile) -->
-  <div class="mobile-controls" style="display: none;">
-    <button class="mobile-dropdown-toggle" id="games-toggle">
-      Games <span>▼</span>
-    </button>
-    <div class="mobile-dropdown-content" id="games-dropdown">
-      <div class="game-list" id="mobile-game-list"></div>
-    </div>
-    
-    <button class="mobile-dropdown-toggle" id="music-toggle">
-      Music <span>▼</span>
-    </button>
-    <div class="mobile-dropdown-content" id="music-dropdown">
-      <audio id="mobile-arcade-music" class="music-player" controls style="width: 100%; margin: 10px 0;"></audio>
-      <div class="music-list" id="mobile-music-list"></div>
-    </div>
-    
-    <!-- Mobile fullscreen button -->
-    <button class="mobile-fullscreen-btn order-btn" id="mobile-fullscreen-btn">Fullscreen</button>
-  </div>
-
   <div class="arcade-layout">
     <!-- Desktop Layout -->
     <div class="arcade-col left">
@@ -72,62 +47,8 @@
   </div>
   <script src="arcade-menu.js"></script>
   <script>
-    // Game loading functionality
-    async function loadGames() {
-      try {
-        const response = await fetch('/api/roms');
-        const data = await response.json();
-        
-        const gameList = document.getElementById('game-list');
-        const mobileGameList = document.getElementById('mobile-game-list');
-        
-        if (data.roms && data.roms.length > 0) {
-          data.roms.forEach(rom => {
-            // Desktop game button
-            const gameBtn = document.createElement('button');
-            gameBtn.className = 'game-btn';
-            gameBtn.textContent = rom.display_name;
-            gameBtn.onclick = () => loadGame(rom.name);
-            gameList.appendChild(gameBtn);
-            
-            // Mobile game button
-            const mobileGameBtn = document.createElement('button');
-            mobileGameBtn.className = 'game-btn';
-            mobileGameBtn.textContent = rom.display_name;
-            mobileGameBtn.onclick = () => loadGame(rom.name);
-            mobileGameList.appendChild(mobileGameBtn);
-          });
-        } else {
-          gameList.innerHTML = '<div class="arcade-error">No games available</div>';
-          mobileGameList.innerHTML = '<div class="arcade-error">No games available</div>';
-        }
-      } catch (error) {
-        console.error('Failed to load games:', error);
-        const gameList = document.getElementById('game-list');
-        const mobileGameList = document.getElementById('mobile-game-list');
-        gameList.innerHTML = '<div class="arcade-error">Failed to load games</div>';
-        mobileGameList.innerHTML = '<div class="arcade-error">Failed to load games</div>';
-      }
-    }
-    
-    function loadGame(romName) {
-      const frame = document.getElementById('emulator-frame');
-      const romUrl = `/api/roms/${romName}`;
-      
-      // Update EmulatorJS iframe with the ROM
-      frame.src = `/emulatorjs/indexe.html?rom=${encodeURIComponent(romUrl)}&core=nestopia`;
-      
-      // Update selected button style
-      document.querySelectorAll('.game-btn').forEach(btn => {
-        btn.classList.remove('selected');
-      });
-      event.target.classList.add('selected');
-    }
-
     // Fullscreen functionality for iframe
     document.addEventListener('DOMContentLoaded', function() {
-      // Load games when page loads
-      loadGames();
       
       const fullscreenBtn = document.getElementById('fullscreen-btn');
       const mobileFullscreenBtn = document.getElementById('mobile-fullscreen-btn');
@@ -150,11 +71,6 @@
       // Desktop fullscreen button
       if (fullscreenBtn) {
         fullscreenBtn.onclick = enterFullscreen;
-      }
-      
-      // Mobile fullscreen button
-      if (mobileFullscreenBtn) {
-        mobileFullscreenBtn.onclick = enterFullscreen;
       }
       
       // Exit fullscreen

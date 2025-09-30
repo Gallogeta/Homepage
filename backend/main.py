@@ -33,7 +33,7 @@ load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./db.sqlite3")
 SECRET_KEY = os.getenv("SECRET_KEY", "your_secret_key")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 1440
 # --- Added admin and allowlist config ---
 ADMIN_USER = os.getenv("ADMIN_USER", "gallo")
 ALLOWED_CHECK_HOSTS = set(
@@ -483,7 +483,7 @@ async def translate(req: TranslateRequest):
     return {"translations": out, "changed": changed}
 
 # List available ROM files under backend/SNES
-@app.get("/api/snes")
+@app.get("/snes")
 def list_snes_roms():
     base_dir = os.path.dirname(os.path.abspath(__file__))
     rom_dir = os.path.join(base_dir, "SNES")
@@ -503,7 +503,7 @@ def list_snes_roms():
     return files
 
 # Serve SNES ROMs from backend/SNES/
-@app.get("/api/snes/{filename}")
+@app.get("/snes/{filename}")
 def get_snes_rom(filename: str):
     base_dir = os.path.dirname(os.path.abspath(__file__))
     rom_path = os.path.join(base_dir, "SNES", filename)
@@ -561,7 +561,7 @@ def admin_required(username: str = Depends(get_current_user)) -> str:
     return username
 
 # System metrics and checks for sysadmin dashboard
-@app.get("/api/metrics/system")
+@app.get("/metrics/system")
 
 def system_metrics(_: str = Depends(admin_required)):
     try:
@@ -605,7 +605,7 @@ def system_metrics(_: str = Depends(admin_required)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/api/metrics/processes")
+@app.get("/metrics/processes")
 
 def processes(limit: int = 15, _: str = Depends(admin_required)):
     procs = []
@@ -615,7 +615,7 @@ def processes(limit: int = 15, _: str = Depends(admin_required)):
     procs.sort(key=lambda x: (x.get("cpu_percent") or 0), reverse=True)
     return procs[: max(limit, 1)]
 
-@app.get("/api/checks/port")
+@app.get("/checks/port")
 
 def check_port(host: str = "127.0.0.1", port: int = 22, timeout: float = 0.5, _: str = Depends(admin_required)):
     host_l = (host or "").strip().lower()
@@ -629,7 +629,7 @@ def check_port(host: str = "127.0.0.1", port: int = 22, timeout: float = 0.5, _:
         except Exception:
             return {"host": host, "port": port, "open": False}
 
-@app.get("/api/checks/http")
+@app.get("/checks/http")
 
 async def check_http(url: str, timeout: float = 2.5, _: str = Depends(admin_required)):
     try:
@@ -647,7 +647,7 @@ async def check_http(url: str, timeout: float = 2.5, _: str = Depends(admin_requ
         return {"url": url, "ok": False, "error": str(e)}
 
 # Simple mesh topology (admin-only) for Live Infra Map
-@app.get("/api/mesh/topology")
+@app.get("/mesh/topology")
 def mesh_topology(_: str = Depends(admin_required)):
     try:
         node_name = None
@@ -744,6 +744,27 @@ async def register(req: RegisterRequest, request: FastAPIRequest, db: Session = 
     _send_email("Verify your email", body, req.email)
     _audit(db, "register", uname, ip, extra="pending-verify")
     return {"msg": "User registered successfully. Check your email to verify."}
+
+# Admin endpoints
+@app.get("/admin/users")
+def list_users(_: str = Depends(admin_required), db: Session = Depends(get_db)):
+    users = db.query(User).all()
+    return [{"username": u.username, "email": u.email, "is_verified": u.is_verified, "is_approved": u.is_approved, "role": u.role} for u in users]
+
+@app.post("/admin/users")
+def create_user(req: dict, _: str = Depends(admin_required), db: Session = Depends(get_db)):
+    uname = req.get("username")
+    password = req.get("password")
+    email = req.get("email", "")
+    if not uname or not password:
+        raise HTTPException(status_code=400, detail="Username and password required")
+    if db.query(User).filter(User.username == uname).first():
+        raise HTTPException(status_code=400, detail="Username already exists")
+    hashed = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
+    new_user = User(username=uname, hashed_password=hashed.decode(), email=email, is_verified=True, is_approved=True, role="user")
+    db.add(new_user)
+    db.commit()
+    return {"msg": "User created"}
 
 FAILED_LOGIN_WINDOW = 900  # 15 minutes
 FAILED_LOGIN_LIMIT_PER_IP = 20
@@ -891,6 +912,24 @@ def admin_unlock_user(username: str, _: str = Depends(admin_required), db: Sessi
     db.commit()
     return {"ok": True}
 
+@app.post("/api/admin/users/{username}/ban")
+def admin_ban_user(username: str, _: str = Depends(admin_required), db: Session = Depends(get_db)):
+    u = db.query(User).filter(func.lower(User.username) == username.lower()).first()
+    if not u:
+        raise HTTPException(status_code=404, detail="User not found")
+    u.is_approved = False
+    db.commit()
+    return {"ok": True}
+
+@app.post("/api/admin/users/{username}/delete")
+def admin_delete_user(username: str, _: str = Depends(admin_required), db: Session = Depends(get_db)):
+    u = db.query(User).filter(func.lower(User.username) == username.lower()).first()
+    if not u:
+        raise HTTPException(status_code=404, detail="User not found")
+    db.delete(u)
+    db.commit()
+    return {"ok": True}
+
 @app.get("/me")
 
 def read_users_me(token: str = Depends(oauth2_scheme)):
@@ -1011,7 +1050,7 @@ async def visitors_ping(req: FastAPIRequest):
     dur = (now - v["first_seen"]).total_seconds()
     return {"ok": True, "ip": ip, "os": v["os"], "dur_sec": int(dur)}
 
-@app.get("/api/visitors/active")
+@app.get("/visitors/active")
 async def visitors_active(req: FastAPIRequest):
     ip_self = _client_ip(req)
     now = datetime.utcnow()
@@ -1039,46 +1078,73 @@ async def visitors_active(req: FastAPIRequest):
     return {"count": len(results), "visitors": results}
 
 
-# Arcade/ROM endpoints
-@app.get("/api/roms")
+@app.get("/snes")
 async def list_roms():
-    """List available ROM files for the arcade"""
-    import os
-    rom_dir = "/app/SNES"
-    if not os.path.exists(rom_dir):
+    roms_dir = os.path.join(BASE_DIR, "SNES")
+    if not os.path.exists(roms_dir):
         return {"roms": []}
     
     roms = []
-    for filename in os.listdir(rom_dir):
-        if filename.endswith(('.nes', '.smc', '.sfc')):
-            file_path = os.path.join(rom_dir, filename)
-            file_size = os.path.getsize(file_path)
+    for file in os.listdir(roms_dir):
+        if file.endswith('.nes'):
+            file_path = os.path.join(roms_dir, file)
+            size = os.path.getsize(file_path)
+            # Decode file name for display
+            decoded_name = file
+            display_name = decoded_name.replace('.nes', '').replace('_', ' ').replace('-', ' ').title()
             roms.append({
-                "name": filename,
-                "display_name": filename.replace('.nes', '').replace('.smc', '').replace('.sfc', '').replace('_', ' ').title(),
-                "size": file_size
+                "name": file,
+                "display_name": display_name,
+                "size": size
             })
-    
     return {"roms": roms}
 
-
-@app.get("/api/roms/{rom_name}")
+@app.get("/snes/{rom_name}")
 async def get_rom(rom_name: str):
-    """Serve ROM file for the arcade"""
-    import os
-    from fastapi.responses import FileResponse
-    
-    rom_dir = "/app/SNES"
-    rom_path = os.path.join(rom_dir, rom_name)
-    
-    if not os.path.exists(rom_path):
+    roms_dir = os.path.join(BASE_DIR, "SNES")
+    file_path = os.path.join(roms_dir, rom_name)
+    if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="ROM not found")
-    
-    if not rom_name.endswith(('.nes', '.smc', '.sfc')):
-        raise HTTPException(status_code=400, detail="Invalid ROM file")
-    
-    return FileResponse(
-        path=rom_path,
-        filename=rom_name,
-        media_type='application/octet-stream'
-    )
+    return FileResponse(file_path, media_type='application/octet-stream', filename=rom_name)
+
+print(f"Using DATABASE_URL: {DATABASE_URL}")
+
+@app.get("/pages/{page_key}")
+async def get_page(page_key: str, db: Session = Depends(get_db)):
+    page = db.query(Page).filter(Page.name == page_key).first()
+    if page:
+        return {"content": page.content}
+    default_pages = {
+        "home": [
+            {"type": "text", "content": "Welcome to itsusi.eu - Portfolio and Projects\n\nThis is a homepage system with backend, arcade, terminal, and more."},
+        ],
+        "prices": [
+            {"type": "text", "content": "Pricing Information\n\nContact for custom quotes."},
+        ],
+        "creations": [
+            {"type": "text", "content": "My Creations\n\nVarious projects and works."},
+        ],
+        "education": [
+            {"type": "text", "content": "Education\n\nBackground and qualifications."},
+        ],
+        "work": [
+            {"type": "text", "content": "Work History\n\nProfessional experience."},
+        ],
+        "gallery": [
+            {"type": "text", "content": "Gallery\n\nImages and media."},
+        ],
+        "contact": [
+            {"type": "text", "content": "Contact Information\n\nGet in touch."},
+        ],
+    }
+    content = default_pages.get(page_key, [])
+    return {"content": json.dumps(content)}
+
+@app.get("/status")
+async def get_status():
+    return {"status": "online", "version": "1.0"}
+
+@app.get("/users/me")
+async def get_current_user():
+    # Mock user for now
+    return {"username": "guest", "email": None}

@@ -38,6 +38,12 @@
   border-color: var(--gold) !important;
 }
 
+/* Selected ROM button */
+.order-btn.selected {
+  background: var(--gold) !important;
+  color: #111 !important;
+}
+
 /* Mobile dropdown toggle buttons - more compact */
 .mobile-dropdown-toggle {
   width: 100%;
