@@ -47,6 +47,7 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - uploads_data:/var/www/uploads:ro  # Serve uploads directly
       - ./frontend/public:/var/www/html:ro   # Serve public files directly
+      - frontend_build:/var/www/build:ro  # Serve React build files
     networks:
       - homepage_network
     depends_on:
