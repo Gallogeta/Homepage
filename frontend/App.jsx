@@ -1098,7 +1098,7 @@ function DesktopApp() {
           {leftMenuItems.map(item => (
             item.href ? (
               <React.Fragment key={item.key}>
-                <a
+                <button
                   className={
                     "menu-btn" + 
                     (item.key === "arcade" ? " " : "") +
@@ -1109,12 +1109,10 @@ function DesktopApp() {
                     color: '#00ff00',
                     fontWeight: 600
                   } : {}}
-                  href={item.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  onClick={() => window.open(item.href, '_blank', 'noopener,noreferrer')}
                 >
                   {item.label}
-                </a>
+                </button>
                 {item.key === "arcade" && user && (
                   <button
                     className="menu-btn"
