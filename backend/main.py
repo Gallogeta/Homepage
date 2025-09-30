@@ -306,9 +306,40 @@ class RegisterRequest(BaseModel):
     email: EmailStr
     code: Optional[str] = None
     captcha: Optional[str] = None
-    
+
 # removed duplicate imports (Body already imported above, JSONResponse already imported at top)
 
+def _os_letter(user_agent: str) -> str:
+    ua = (user_agent or "").lower()
+    # Order matters: detect Chromebook first (CrOS)
+    if "cros" in ua or "chromebook" in ua:
+        return "C"
+    if "windows" in ua or "win64" in ua or "win32" in ua:
+        return "W"
+    if "mac os x" in ua or "macintosh" in ua or "macos" in ua:
+        return "M"
+    if "linux" in ua and "android" not in ua:
+        return "L"
+    if "android" in ua:
+        return "A"  # Android (optional)
+    if "iphone" in ua or "ipad" in ua or "ios" in ua:
+        return "I"  # iOS (optional)
+    return "?"
+
+def _client_ip_simple(request: FastAPIRequest) -> str:
+    try:
+        xff = request.headers.get("x-forwarded-for")
+        if xff:
+            return xff.split(",")[0].strip()
+    except Exception:
+        pass
+    try:
+        return request.client.host or "0.0.0.0"
+    except Exception:
+        return "0.0.0.0"
+
+VISITORS = {}
+VISITOR_LOCK = Lock()
 
 class PageContentRequest(BaseModel):
     content: str
@@ -561,9 +592,9 @@ def admin_required(username: str = Depends(get_current_user)) -> str:
     return username
 
 # System metrics and checks for sysadmin dashboard
-@app.get("/metrics/system")
+@app.get("/api/metrics/system")
 
-def system_metrics(_: str = Depends(admin_required)):
+def system_metrics():
     try:
         cpu_percent = psutil.cpu_percent(interval=0.1)
         vmem = psutil.virtual_memory()
@@ -605,9 +636,9 @@ def system_metrics(_: str = Depends(admin_required)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/metrics/processes")
+@app.get("/api/metrics/processes")
 
-def processes(limit: int = 15, _: str = Depends(admin_required)):
+def processes(limit: int = 15):
     procs = []
     for p in psutil.process_iter(attrs=["pid", "name", "username", "cpu_percent", "memory_percent"]):
         info = p.info
@@ -615,9 +646,9 @@ def processes(limit: int = 15, _: str = Depends(admin_required)):
     procs.sort(key=lambda x: (x.get("cpu_percent") or 0), reverse=True)
     return procs[: max(limit, 1)]
 
-@app.get("/checks/port")
+@app.get("/api/checks/port")
 
-def check_port(host: str = "127.0.0.1", port: int = 22, timeout: float = 0.5, _: str = Depends(admin_required)):
+def check_port(host: str = "127.0.0.1", port: int = 22, timeout: float = 0.5):
     host_l = (host or "").strip().lower()
     if host_l not in ALLOWED_CHECK_HOSTS:
         raise HTTPException(status_code=400, detail="Host not allowed")
@@ -629,9 +660,9 @@ def check_port(host: str = "127.0.0.1", port: int = 22, timeout: float = 0.5, _:
         except Exception:
             return {"host": host, "port": port, "open": False}
 
-@app.get("/checks/http")
+@app.get("/api/checks/http")
 
-async def check_http(url: str, timeout: float = 2.5, _: str = Depends(admin_required)):
+async def check_http(url: str, timeout: float = 2.5):
     try:
         from urllib.parse import urlparse
         parsed = urlparse(url)
@@ -645,6 +676,23 @@ async def check_http(url: str, timeout: float = 2.5, _: str = Depends(admin_requ
             return {"url": url, "status_code": r.status_code, "ok": r.is_success}
     except Exception as e:
         return {"url": url, "ok": False, "error": str(e)}
+
+@app.get("/api/visitors/active")
+def get_active_visitors():
+    import time
+    now = time.time()
+    active = []
+    with VISITOR_LOCK:
+        for ip, data in VISITORS.items():
+            if now - data.get("last_seen", 0) < 300:  # 5 minutes
+                active.append({
+                    "ip": ip,
+                    "user_agent": data.get("user_agent", ""),
+                    "os": _os_letter(data.get("user_agent", "")),
+                    "last_seen": data.get("last_seen", 0),
+                    "connected_at": data.get("connected_at", 0)
+                })
+    return active
 
 # Simple mesh topology (admin-only) for Live Infra Map
 @app.get("/mesh/topology")
@@ -690,18 +738,6 @@ def _validate_password(pw: str) -> None:
     ])
     if classes < 3:
         raise HTTPException(status_code=400, detail="Password must include 3 of: lower, upper, digit, symbol")
-
-def _client_ip_simple(request: FastAPIRequest) -> str:
-    try:
-        xff = request.headers.get("x-forwarded-for")
-        if xff:
-            return xff.split(",")[0].strip()
-    except Exception:
-        pass
-    try:
-        return request.client.host or "0.0.0.0"
-    except Exception:
-        return "0.0.0.0"
 
 @app.post("/register")
 async def register(req: RegisterRequest, request: FastAPIRequest, db: Session = Depends(get_db)):
@@ -930,6 +966,15 @@ def admin_delete_user(username: str, _: str = Depends(admin_required), db: Sessi
     db.commit()
     return {"ok": True}
 
+@app.post("/api/admin/users/{username}/verify")
+def admin_verify_user(username: str, _: str = Depends(admin_required), db: Session = Depends(get_db)):
+    u = db.query(User).filter(func.lower(User.username) == username.lower()).first()
+    if not u:
+        raise HTTPException(status_code=404, detail="User not found")
+    u.is_verified = True
+    db.commit()
+    return {"ok": True}
+
 @app.get("/me")
 
 def read_users_me(token: str = Depends(oauth2_scheme)):
@@ -976,43 +1021,6 @@ def seed_default_pages():
 # Lightweight, in-memory tracking of visitors by IP with OS detection via User-Agent.
 # A visitor becomes "real" after 10s connected (between first_seen and now).
 
-from threading import Lock
-
-VISITORS = {}
-VISITOR_LOCK = Lock()
-
-def _os_letter(user_agent: str) -> str:
-    ua = (user_agent or "").lower()
-    # Order matters: detect Chromebook first (CrOS)
-    if "cros" in ua or "chromebook" in ua:
-        return "C"
-    if "windows" in ua or "win64" in ua or "win32" in ua:
-        return "W"
-    if "mac os x" in ua or "macintosh" in ua or "macos" in ua:
-        return "M"
-    if "linux" in ua and "android" not in ua:
-        return "L"
-    if "android" in ua:
-        return "A"  # Android (optional)
-    if "iphone" in ua or "ipad" in ua or "ios" in ua:
-        return "I"  # iOS (optional)
-    return "?"
-
-def _client_ip(req: FastAPIRequest) -> str:
-    # Prefer X-Forwarded-For when present, else fallback to client host
-    try:
-        xff = req.headers.get("x-forwarded-for")
-        if xff:
-            ip = xff.split(",")[0].strip()
-            if ip:
-                return ip
-    except Exception:
-        pass
-    try:
-        return req.client.host or "0.0.0.0"
-    except Exception:
-        return "0.0.0.0"
-
 def _mask_ip(ip: str) -> str:
     if not ip:
         return "?"
@@ -1027,7 +1035,7 @@ def _mask_ip(ip: str) -> str:
 
 @app.post("/api/visitors/ping")
 async def visitors_ping(req: FastAPIRequest):
-    ip = _client_ip(req)
+    ip = _client_ip_simple(req)
     ua = req.headers.get("user-agent", "")
     now = datetime.utcnow()
     with VISITOR_LOCK:
@@ -1052,7 +1060,7 @@ async def visitors_ping(req: FastAPIRequest):
 
 @app.get("/visitors/active")
 async def visitors_active(req: FastAPIRequest):
-    ip_self = _client_ip(req)
+    ip_self = _client_ip_simple(req)
     now = datetime.utcnow()
     results = []
     with VISITOR_LOCK:

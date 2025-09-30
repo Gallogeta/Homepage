@@ -71,6 +71,21 @@ export default function AdminPanel() {
     }
   }
 
+  const verifyUser = async (username) => {
+    try {
+      const res = await fetch(`/api/admin/users/${username}/verify`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (!res.ok) throw new Error(await res.text());
+      setUsers(users.map(u => u.username === username ? {...u, is_verified: true} : u));
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
   return (
   <div className="bg-black border border-gold p-4 rounded text-gold w-full" style={{margin: 0, position: 'relative', top: '-8rem', fontSize: '0.95rem', overflow: 'auto', maxHeight: '500px', textAlign: 'center', borderRadius: 0, width: '100%', maxWidth: '100vw', left: 0, alignSelf: 'flex-start'}}>
       <h3 className="text-xl mb-2 border-b border-gold pb-2">User Management</h3>
@@ -102,6 +117,7 @@ export default function AdminPanel() {
                             <td className="border border-gold p-2">
                 <button className="header-btn mr-2" onClick={() => deleteUser(u.username)}>Delete</button>
                 <button className="header-btn mr-2" onClick={() => banUser(u.username)}>Ban</button>
+                {!u.is_verified && <button className="header-btn mr-2" onClick={() => verifyUser(u.username)}>Verify</button>}
                 <button className="header-btn mr-2">Reset PW</button>
                 <button className="header-btn">Edit</button>
               </td>
