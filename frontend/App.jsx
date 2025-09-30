@@ -65,9 +65,9 @@ const menuItems = [
 // Left sidebar menu items
 const leftMenuItems = [
   { key: "placeholder2", label: "Infra Map" },
-  { key: "sandbox-ext", label: "Terminal", href: "/Sandbox/sandbox.html" },
+  { key: "terminal", label: "Terminal", href: "/terminal.html" },
   { key: "placeholder1", label: "Sysadmin Dashboard" },
-  { key: "arcade", label: "Arcade" },
+  { key: "arcade", label: "Arcade", href: "/arcade.html" },
 ];
 
 const adminLeftMenuItems = [
@@ -1097,34 +1097,25 @@ function DesktopApp() {
           )}
           {leftMenuItems.map(item => (
             item.href ? (
-              <a
-                key={item.key}
-                className="menu-btn"
-                href={item.href}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {item.label}
-              </a>
-            ) : item.key === "arcade" ? (
               <React.Fragment key={item.key}>
                 <a
                   className={
-                    "menu-btn" +
-                    (active === item.key ? " left-menu-btn-active" : "")
+                    "menu-btn" + 
+                    (item.key === "arcade" ? " " : "") +
+                    (item.key === "arcade" ? "arcade-btn" : "")
                   }
-                  style={{
+                  style={item.key === "arcade" ? {
                     border: '2px solid #00ff00',
                     color: '#00ff00',
                     fontWeight: 600
-                  }}
-                  href="/arcade.html"
+                  } : {}}
+                  href={item.href}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
                   {item.label}
                 </a>
-                {user && (
+                {item.key === "arcade" && user && (
                   <button
                     className="menu-btn"
                     style={{
