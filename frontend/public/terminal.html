@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Terminal</title>
+  <style>
+    body { 
+      background: #000; 
+      color: #00ff00; 
+      font-family: 'Courier New', monospace; 
+      margin: 0; 
+      padding: 20px;
+      overflow: hidden;
+    }
+    .terminal-header { 
+      text-align: center; 
+      font-size: 2rem; 
+      margin-bottom: 2rem; 
+      color: #00ff00;
+      text-shadow: 0 0 10px #00ff00;
+    }
+    .terminal-container {
+      height: calc(100vh - 100px);
+      border: 2px solid #00ff00;
+      border-radius: 8px;
+      padding: 20px;
+      background: #001100;
+      box-shadow: 0 0 20px #00ff00;
+    }
+    .terminal-content {
+      height: 100%;
+      overflow-y: auto;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    .terminal-line {
+      margin-bottom: 5px;
+    }
+    .terminal-prompt {
+      color: #ffff00;
+    }
+    .blink {
+      animation: blink 1s infinite;
+    }
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="terminal-header">Terminal Access</div>
+  
+  <div class="terminal-container">
+    <div class="terminal-content" id="terminal-content">
+      <div class="terminal-line">
+        <span class="terminal-prompt">gallo@homepage:~$</span> Welcome to the Homepage Terminal
+      </div>
+      <div class="terminal-line">
+        <span class="terminal-prompt">gallo@homepage:~$</span> System Status: Online
+      </div>
+      <div class="terminal-line">
+        <span class="terminal-prompt">gallo@homepage:~$</span> Docker Containers: Running
+      </div>
+      <div class="terminal-line">
+        <span class="terminal-prompt">gallo@homepage:~$</span> Database: Connected
+      </div>
+      <div class="terminal-line">
+        <span class="terminal-prompt">gallo@homepage:~$</span> API: Operational
+      </div>
+      <div class="terminal-line">
+        <span class="terminal-prompt">gallo@homepage:~$</span> Arcade: Functional
+      </div>
+      <div class="terminal-line">
+        <span class="terminal-prompt">gallo@homepage:~$</span> 
+      </div>
+      <div class="terminal-line">
+        <span class="terminal-prompt">gallo@homepage:~$</span> This is a read-only terminal display.
+      </div>
+      <div class="terminal-line">
+        <span class="terminal-prompt">gallo@homepage:~$</span> For full terminal access, SSH to the server.
+      </div>
+      <div class="terminal-line">
+        <span class="terminal-prompt">gallo@homepage:~$</span> <span class="blink">█</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Add some dynamic terminal-like behavior
+    setInterval(() => {
+      const content = document.getElementById('terminal-content');
+      const now = new Date();
+      const timestamp = now.toLocaleTimeString();
+      
+      // Occasionally add a system status line
+      if (Math.random() < 0.1) { // 10% chance every second
+        const statusLines = [
+          `System uptime: ${Math.floor(Math.random() * 100)}h ${Math.floor(Math.random() * 60)}m`,
+          `Memory usage: ${Math.floor(Math.random() * 30 + 40)}%`,
+          `CPU usage: ${Math.floor(Math.random() * 20 + 5)}%`,
+          `Active connections: ${Math.floor(Math.random() * 50 + 10)}`,
+          `Last login: ${timestamp}`
+        ];
+        
+        const randomStatus = statusLines[Math.floor(Math.random() * statusLines.length)];
+        const newLine = document.createElement('div');
+        newLine.className = 'terminal-line';
+        newLine.innerHTML = `<span class="terminal-prompt">gallo@homepage:~$</span> ${randomStatus}`;
+        
+        // Remove the cursor line, add new line, then add cursor back
+        const lines = content.children;
+        const cursorLine = lines[lines.length - 1];
+        content.removeChild(cursorLine);
+        content.appendChild(newLine);
+        content.appendChild(cursorLine);
+        
+        // Auto-scroll to bottom
+        content.scrollTop = content.scrollHeight;
+        
+        // Limit number of lines to prevent memory issues
+        if (lines.length > 50) {
+          content.removeChild(lines[5]); // Keep first few static lines
+        }
+      }
+    }, 3000); // Check every 3 seconds
+  </script>
+</body>
+</html>
