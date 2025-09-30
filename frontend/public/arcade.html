@@ -72,8 +72,63 @@
   </div>
   <script src="arcade-menu.js"></script>
   <script>
+    // Game loading functionality
+    async function loadGames() {
+      try {
+        const response = await fetch('/api/roms');
+        const data = await response.json();
+        
+        const gameList = document.getElementById('game-list');
+        const mobileGameList = document.getElementById('mobile-game-list');
+        
+        if (data.roms && data.roms.length > 0) {
+          data.roms.forEach(rom => {
+            // Desktop game button
+            const gameBtn = document.createElement('button');
+            gameBtn.className = 'game-btn';
+            gameBtn.textContent = rom.display_name;
+            gameBtn.onclick = () => loadGame(rom.name);
+            gameList.appendChild(gameBtn);
+            
+            // Mobile game button
+            const mobileGameBtn = document.createElement('button');
+            mobileGameBtn.className = 'game-btn';
+            mobileGameBtn.textContent = rom.display_name;
+            mobileGameBtn.onclick = () => loadGame(rom.name);
+            mobileGameList.appendChild(mobileGameBtn);
+          });
+        } else {
+          gameList.innerHTML = '<div class="arcade-error">No games available</div>';
+          mobileGameList.innerHTML = '<div class="arcade-error">No games available</div>';
+        }
+      } catch (error) {
+        console.error('Failed to load games:', error);
+        const gameList = document.getElementById('game-list');
+        const mobileGameList = document.getElementById('mobile-game-list');
+        gameList.innerHTML = '<div class="arcade-error">Failed to load games</div>';
+        mobileGameList.innerHTML = '<div class="arcade-error">Failed to load games</div>';
+      }
+    }
+    
+    function loadGame(romName) {
+      const frame = document.getElementById('emulator-frame');
+      const romUrl = `/api/roms/${romName}`;
+      
+      // Update EmulatorJS iframe with the ROM
+      frame.src = `/emulatorjs/indexe.html?rom=${encodeURIComponent(romUrl)}&core=nestopia`;
+      
+      // Update selected button style
+      document.querySelectorAll('.game-btn').forEach(btn => {
+        btn.classList.remove('selected');
+      });
+      event.target.classList.add('selected');
+    }
+
     // Fullscreen functionality for iframe
     document.addEventListener('DOMContentLoaded', function() {
+      // Load games when page loads
+      loadGames();
+      
       const fullscreenBtn = document.getElementById('fullscreen-btn');
       const mobileFullscreenBtn = document.getElementById('mobile-fullscreen-btn');
       const exitFullscreenBtn = document.getElementById('exit-fullscreen-btn');

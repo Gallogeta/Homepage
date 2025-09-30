@@ -1037,3 +1037,48 @@ async def visitors_active(req: FastAPIRequest):
     # Stable order (oldest first)
     results.sort(key=lambda x: x["dur_sec"], reverse=False)
     return {"count": len(results), "visitors": results}
+
+
+# Arcade/ROM endpoints
+@app.get("/api/roms")
+async def list_roms():
+    """List available ROM files for the arcade"""
+    import os
+    rom_dir = "/app/SNES"
+    if not os.path.exists(rom_dir):
+        return {"roms": []}
+    
+    roms = []
+    for filename in os.listdir(rom_dir):
+        if filename.endswith(('.nes', '.smc', '.sfc')):
+            file_path = os.path.join(rom_dir, filename)
+            file_size = os.path.getsize(file_path)
+            roms.append({
+                "name": filename,
+                "display_name": filename.replace('.nes', '').replace('.smc', '').replace('.sfc', '').replace('_', ' ').title(),
+                "size": file_size
+            })
+    
+    return {"roms": roms}
+
+
+@app.get("/api/roms/{rom_name}")
+async def get_rom(rom_name: str):
+    """Serve ROM file for the arcade"""
+    import os
+    from fastapi.responses import FileResponse
+    
+    rom_dir = "/app/SNES"
+    rom_path = os.path.join(rom_dir, rom_name)
+    
+    if not os.path.exists(rom_path):
+        raise HTTPException(status_code=404, detail="ROM not found")
+    
+    if not rom_name.endswith(('.nes', '.smc', '.sfc')):
+        raise HTTPException(status_code=400, detail="Invalid ROM file")
+    
+    return FileResponse(
+        path=rom_path,
+        filename=rom_name,
+        media_type='application/octet-stream'
+    )
