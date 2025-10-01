@@ -375,6 +375,41 @@ except Exception as e:
 "
 
 # ============================================
+# 7.5 COPY MEDIA FILES (ROMs, Music, etc.)
+# ============================================
+echo ""
+echo -e "${CYAN}📦 Step 7.5: Copying media files (ROMs, music, etc.)...${NC}"
+
+# Copy ROMs to backend
+if [ -d "backend/SNES" ]; then
+    echo "Copying ROMs to backend container..."
+    docker cp backend/SNES/. homepage_backend:/app/SNES/
+    echo -e "${GREEN}✓ ROMs copied ($(ls backend/SNES/*.nes 2>/dev/null | wc -l) files)${NC}"
+else
+    echo -e "${YELLOW}⚠ No ROMs directory found${NC}"
+fi
+
+# Copy music files to uploads
+if [ -d "frontend/public/media" ]; then
+    echo "Copying music and media files..."
+    # Copy to Docker volume
+    sudo mkdir -p /var/lib/docker/volumes/homepage_uploads_data/_data/media
+    sudo cp -r frontend/public/media/* /var/lib/docker/volumes/homepage_uploads_data/_data/media/ 2>/dev/null || true
+    echo -e "${GREEN}✓ Media files copied${NC}"
+else
+    echo -e "${YELLOW}⚠ No media directory found${NC}"
+fi
+
+# Copy any additional uploads
+if [ -d "backend/uploads" ]; then
+    echo "Copying additional uploads..."
+    sudo cp -r backend/uploads/* /var/lib/docker/volumes/homepage_uploads_data/_data/ 2>/dev/null || true
+    echo -e "${GREEN}✓ Additional uploads copied${NC}"
+fi
+
+echo -e "${GREEN}✓ All media files synced${NC}"
+
+# ============================================
 # 8. SYNC FRONTEND BUILD
 # ============================================
 echo ""
