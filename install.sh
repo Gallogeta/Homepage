@@ -42,10 +42,48 @@ if [ "$EUID" -ne 0 ]; then
     echo -e "${YELLOW}⚠️  This script needs sudo privileges for some operations${NC}"
 fi
 
+# Function to show disk space
+show_disk_space() {
+    echo -e "${CYAN}💾 Available Disk Space:${NC}"
+    echo ""
+    df -h | grep -E "^/dev/" | awk '{printf "  %-20s %8s used / %8s total (%s full) - mounted on %s\n", $1, $3, $2, $5, $6}'
+    echo ""
+}
+
 # ============================================
 # 1. GATHER CONFIGURATION
 # ============================================
 echo -e "${CYAN}📋 Step 1: Configuration${NC}"
+echo ""
+
+# Show disk space
+show_disk_space
+
+# Get installation path
+echo -e "${YELLOW}Choose installation location:${NC}"
+echo "  1) /opt/homepage (recommended)"
+echo "  2) /home/homepage"
+echo "  3) Custom path"
+read -p "Enter choice [1, 2, or 3]: " INSTALL_CHOICE
+
+case $INSTALL_CHOICE in
+    1)
+        INSTALL_PATH="/opt/homepage"
+        ;;
+    2)
+        INSTALL_PATH="/home/homepage"
+        ;;
+    3)
+        read -p "Enter custom installation path: " CUSTOM_PATH
+        INSTALL_PATH="${CUSTOM_PATH%/}"  # Remove trailing slash
+        ;;
+    *)
+        echo -e "${RED}Invalid choice. Using default: /opt/homepage${NC}"
+        INSTALL_PATH="/opt/homepage"
+        ;;
+esac
+
+echo -e "${GREEN}✓ Installation path: ${INSTALL_PATH}${NC}"
 echo ""
 
 # Get server IP
@@ -232,13 +270,14 @@ echo -e "${GREEN}✓ Environment files created${NC}"
 echo ""
 echo -e "${CYAN}📂 Step 4.5: Setting up installation directory...${NC}"
 
-INSTALL_DIR="/opt/homepage"
+INSTALL_DIR="$INSTALL_PATH"
 CURRENT_DIR=$(pwd)
 
 # Create installation directory if it doesn't exist
 if [ ! -d "$INSTALL_DIR" ]; then
     echo "Creating $INSTALL_DIR..."
     mkdir -p "$INSTALL_DIR"
+    echo -e "${GREEN}✓ Created $INSTALL_DIR${NC}"
 fi
 
 # If we're not already in /opt/homepage, copy files there
@@ -423,9 +462,10 @@ echo -e "  Stop:         ${CYAN}docker-compose down${NC}"
 echo -e "  View status:  ${CYAN}docker ps${NC}"
 echo ""
 echo -e "${GREEN}Files:${NC}"
+echo -e "  Install path: ${CYAN}$INSTALL_PATH${NC}"
 echo -e "  Backup:       ${CYAN}$BACKUP_DIR${NC}"
-echo -e "  Backend env:  ${CYAN}backend/.env${NC}"
-echo -e "  Frontend env: ${CYAN}frontend/.env${NC}"
+echo -e "  Backend env:  ${CYAN}$INSTALL_PATH/backend/.env${NC}"
+echo -e "  Frontend env: ${CYAN}$INSTALL_PATH/frontend/.env${NC}"
 echo ""
 echo -e "${YELLOW}Next Steps:${NC}"
 echo -e "  1. Visit http://$SERVER_IP and login"
