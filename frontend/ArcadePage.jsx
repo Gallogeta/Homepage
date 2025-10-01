@@ -1,13 +1,17 @@
 
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { NES } from "jsnes";
 
 // Games will be loaded from the backend /api/snes listing
 
 
 export default function ArcadePage() {
+  const navigate = useNavigate();
   const [error, setError] = useState("");
   const [games, setGames] = useState([]);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const canvasRef = useRef();
   const audioRef = useRef();
   const nesRef = useRef();
@@ -16,34 +20,58 @@ export default function ArcadePage() {
   // Always selected, only one game
   const selected = 0;
 
+  // Check authentication
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      setIsLoading(false);
+      setError("You must be logged in to access the arcade.");
+      return;
+    }
+    setIsAuthenticated(true);
+    setIsLoading(false);
+  }, []);
+
   useEffect(() => {
     // Play music on mount
-    if (audioRef.current) {
+    if (audioRef.current && isAuthenticated) {
       audioRef.current.volume = 0.25;
       audioRef.current.play().catch(() => {});
     }
     return () => {
       if (audioRef.current) audioRef.current.pause();
     };
-  }, []);
+  }, [isAuthenticated]);
 
   // Load list of ROMs from backend
   useEffect(() => {
-    fetch(`/api/snes`)
+    if (!isAuthenticated) return;
+    
+    const token = localStorage.getItem("access_token");
+    fetch(`/api/snes`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
       .then((res) => res.json())
       .then((data) => {
         setGames(Array.isArray(data) ? data : []);
       })
       .catch((e) => setError("ROM list error: " + e.message));
-  }, []);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     setError("");
-    if (!canvasRef.current || games.length === 0) return;
+    if (!isAuthenticated || !canvasRef.current || games.length === 0) return;
     const game = games[selected];
     if (!game) return;
     
-    fetch(`/api/snes/${encodeURIComponent(game.file)}`)
+    const token = localStorage.getItem("access_token");
+    fetch(`/api/snes/${encodeURIComponent(game.file)}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
         .then((res) => res.arrayBuffer())
         .then((romBuffer) => {
           if (nesRef.current && typeof nesRef.current.reset === 'function') nesRef.current.reset();
@@ -85,6 +113,33 @@ export default function ArcadePage() {
       }
     }
   };
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="w-full flex items-center justify-center min-h-[70vh] p-8 bg-black/90 rounded-lg border border-gold shadow-lg">
+        <div className="text-gold text-2xl">Loading...</div>
+      </div>
+    );
+  }
+
+  // Show login required message
+  if (!isAuthenticated) {
+    return (
+      <div className="w-full flex flex-col items-center justify-center min-h-[70vh] p-8 bg-black/90 rounded-lg border border-gold shadow-lg">
+        <h2 className="text-4xl font-bold text-gold mb-6 tracking-widest">🎮 Arcade</h2>
+        <div className="text-gold text-xl mb-6 text-center">
+          You must be logged in to access the arcade.
+        </div>
+        <button
+          onClick={() => navigate("/login")}
+          className="bg-gold text-black px-8 py-3 rounded-lg font-bold text-lg hover:bg-yellow-400 transition shadow-lg"
+        >
+          Login / Register
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full flex flex-row items-start justify-center min-h-[70vh] p-8 bg-black/90 rounded-lg border border-gold shadow-lg relative">

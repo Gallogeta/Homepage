@@ -518,35 +518,6 @@ async def translate(req: TranslateRequest):
         changed = None
     return {"translations": out, "changed": changed}
 
-# List available ROM files under backend/SNES
-@app.get("/snes")
-def list_snes_roms():
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    rom_dir = os.path.join(base_dir, "SNES")
-    if not os.path.isdir(rom_dir):
-        return []
-    files = []
-    for name in os.listdir(rom_dir):
-        path = os.path.join(rom_dir, name)
-        if os.path.isfile(path) and name.lower().endswith(".nes"):
-            try:
-                size = os.path.getsize(path)
-            except OSError:
-                size = None
-            files.append({"name": os.path.splitext(name)[0], "file": name, "size": size})
-    # sort by name for stable ordering
-    files.sort(key=lambda x: x["name"].lower())
-    return files
-
-# Serve SNES ROMs from backend/SNES/
-@app.get("/snes/{filename}")
-def get_snes_rom(filename: str):
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    rom_path = os.path.join(base_dir, "SNES", filename)
-    if not os.path.exists(rom_path):
-        return JSONResponse(status_code=404, content={"detail": "ROM not found"})
-    return FileResponse(rom_path, media_type="application/octet-stream", filename=filename)
-
 # Media upload endpoint (video/audio); requires auth
 @app.post("/api/upload/media")
 def upload_media(file: UploadFile = File(...), token: str = Depends(oauth2_scheme)):
@@ -595,6 +566,35 @@ def admin_required(username: str = Depends(get_current_user)) -> str:
     if username != ADMIN_USER:
         raise HTTPException(status_code=403, detail="Admin access required")
     return username
+
+# List available ROM files under backend/SNES (requires authentication)
+@app.get("/snes")
+def list_snes_roms(username: str = Depends(get_current_user)):
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    rom_dir = os.path.join(base_dir, "SNES")
+    if not os.path.isdir(rom_dir):
+        return []
+    files = []
+    for name in os.listdir(rom_dir):
+        path = os.path.join(rom_dir, name)
+        if os.path.isfile(path) and name.lower().endswith(".nes"):
+            try:
+                size = os.path.getsize(path)
+            except OSError:
+                size = None
+            files.append({"name": os.path.splitext(name)[0], "file": name, "size": size})
+    # sort by name for stable ordering
+    files.sort(key=lambda x: x["name"].lower())
+    return files
+
+# Serve SNES ROMs from backend/SNES/ (requires authentication)
+@app.get("/snes/{filename}")
+def get_snes_rom(filename: str, username: str = Depends(get_current_user)):
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    rom_path = os.path.join(base_dir, "SNES", filename)
+    if not os.path.exists(rom_path):
+        return JSONResponse(status_code=404, content={"detail": "ROM not found"})
+    return FileResponse(rom_path, media_type="application/octet-stream", filename=filename)
 
 # System metrics and checks for sysadmin dashboard
 @app.get("/api/metrics/system")
@@ -1127,36 +1127,6 @@ async def visitors_active(req: FastAPIRequest):
     # Stable order (oldest first)
     results.sort(key=lambda x: x["dur_sec"], reverse=False)
     return {"count": len(results), "visitors": results}
-
-
-@app.get("/snes")
-async def list_roms():
-    roms_dir = os.path.join(BASE_DIR, "SNES")
-    if not os.path.exists(roms_dir):
-        return {"roms": []}
-    
-    roms = []
-    for file in os.listdir(roms_dir):
-        if file.endswith('.nes'):
-            file_path = os.path.join(roms_dir, file)
-            size = os.path.getsize(file_path)
-            # Decode file name for display
-            decoded_name = file
-            display_name = decoded_name.replace('.nes', '').replace('_', ' ').replace('-', ' ').title()
-            roms.append({
-                "name": file,
-                "display_name": display_name,
-                "size": size
-            })
-    return {"roms": roms}
-
-@app.get("/snes/{rom_name}")
-async def get_rom(rom_name: str):
-    roms_dir = os.path.join(BASE_DIR, "SNES")
-    file_path = os.path.join(roms_dir, rom_name)
-    if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail="ROM not found")
-    return FileResponse(file_path, media_type='application/octet-stream', filename=rom_name)
 
 print(f"Using DATABASE_URL: {DATABASE_URL}")
 

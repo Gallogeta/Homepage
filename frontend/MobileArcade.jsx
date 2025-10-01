@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function MobileArcade() {
+  const navigate = useNavigate();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  
   const GAMES = [
     { name: "Bomberman 2", file: "/api/snes/Bomberman-2.nes" },
     { name: "Casino Kid 2", file: "/api/snes/Casino-Kid-2.nes" },
@@ -29,10 +34,23 @@ export default function MobileArcade() {
   const [showGames, setShowGames] = useState(false);
   const [showMusic, setShowMusic] = useState(false);
 
+  // Check authentication
   useEffect(() => {
-    // Load initial game
-    loadGame(0);
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      setIsLoading(false);
+      return;
+    }
+    setIsAuthenticated(true);
+    setIsLoading(false);
   }, []);
+
+  useEffect(() => {
+    // Load initial game only if authenticated
+    if (isAuthenticated) {
+      loadGame(0);
+    }
+  }, [isAuthenticated]);
 
   const loadGame = (index) => {
     const game = GAMES[index];
@@ -51,6 +69,62 @@ export default function MobileArcade() {
     setSelectedMusic(index);
     setShowMusic(false);
   };
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div style={{
+        width: '100%',
+        height: 'calc(100vh - 120px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#000',
+        color: '#ffd700',
+        fontSize: '24px'
+      }}>
+        Loading...
+      </div>
+    );
+  }
+
+  // Show login required message
+  if (!isAuthenticated) {
+    return (
+      <div style={{
+        width: '100%',
+        height: 'calc(100vh - 120px)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#000',
+        color: '#ffd700',
+        padding: '20px',
+        textAlign: 'center'
+      }}>
+        <h2 style={{ fontSize: '32px', marginBottom: '20px' }}>🎮 Mobile Arcade</h2>
+        <p style={{ fontSize: '18px', marginBottom: '30px' }}>
+          You must be logged in to access the arcade.
+        </p>
+        <button
+          onClick={() => navigate("/login")}
+          style={{
+            background: '#ffd700',
+            color: '#000',
+            padding: '12px 32px',
+            fontSize: '18px',
+            fontWeight: 'bold',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer'
+          }}
+        >
+          Login / Register
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="mobile-arcade-wrapper" style={{
