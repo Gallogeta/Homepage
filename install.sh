@@ -169,10 +169,35 @@ else
 fi
 
 # ============================================
+# 3.5. CLEANUP PORTS AND CONTAINERS
+# ============================================
+echo ""
+echo -e "${CYAN}🧹 Step 3.5: Cleaning up ports and containers...${NC}"
+
+# Stop all homepage containers
+echo "Stopping existing containers..."
+docker stop $(docker ps -aq --filter "name=homepage") 2>/dev/null || true
+docker rm $(docker ps -aq --filter "name=homepage") 2>/dev/null || true
+
+# Kill processes on required ports
+for port in 80 443 3000 8000; do
+    pids=$(lsof -ti :$port 2>/dev/null || true)
+    if [ -n "$pids" ]; then
+        echo "Freeing port $port..."
+        echo "$pids" | xargs kill -9 2>/dev/null || true
+    fi
+done
+
+# Clean up networks
+docker network rm homepage_homepage_network 2>/dev/null || true
+
+echo -e "${GREEN}✓ Cleanup completed${NC}"
+
+# ============================================
 # 4. UPDATE CONFIGURATION FILES
 # ============================================
 echo ""
-echo -e "${CYAN}📝 Step 3: Updating configuration files...${NC}"
+echo -e "${CYAN}📝 Step 4: Updating configuration files...${NC}"
 
 # Update nginx configuration
 if [ -f "nginx/nginx.conf" ]; then
