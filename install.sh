@@ -227,10 +227,36 @@ EOF
 echo -e "${GREEN}✓ Environment files created${NC}"
 
 # ============================================
+# 4.5 COPY TO PROPER INSTALLATION DIRECTORY
+# ============================================
+echo ""
+echo -e "${CYAN}📂 Step 4.5: Setting up installation directory...${NC}"
+
+INSTALL_DIR="/opt/homepage"
+CURRENT_DIR=$(pwd)
+
+# Create installation directory if it doesn't exist
+if [ ! -d "$INSTALL_DIR" ]; then
+    echo "Creating $INSTALL_DIR..."
+    mkdir -p "$INSTALL_DIR"
+fi
+
+# If we're not already in /opt/homepage, copy files there
+if [ "$CURRENT_DIR" != "$INSTALL_DIR" ]; then
+    echo "Copying files to $INSTALL_DIR..."
+    cp -r ./* "$INSTALL_DIR/" 2>/dev/null || true
+    cp -r ./.* "$INSTALL_DIR/" 2>/dev/null || true
+    cd "$INSTALL_DIR"
+    echo -e "${GREEN}✓ Files copied to $INSTALL_DIR${NC}"
+else
+    echo -e "${GREEN}✓ Already in installation directory${NC}"
+fi
+
+# ============================================
 # 5. STOP EXISTING CONTAINERS
 # ============================================
 echo ""
-echo -e "${CYAN}⏹️  Step 4: Stopping existing containers...${NC}"
+echo -e "${CYAN}⏹️  Step 5: Stopping existing containers...${NC}"
 if [ "$DB_CHOICE" = "1" ]; then
     docker-compose down -v  # Remove volumes for fresh install
     echo -e "${YELLOW}Removed all volumes (fresh install)${NC}"
