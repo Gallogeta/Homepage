@@ -272,7 +272,7 @@ def _rate_check(bucket: str, key: str, limit: int, window_sec: int) -> tuple[boo
         return True, 0
 
 logging.basicConfig(
-    filename="error.log",
+    filename="/app/data/error.log",
     level=logging.ERROR,
     format="%(asctime)s %(levelname)s %(message)s",
 )
