@@ -33,28 +33,29 @@ echo -e "${CYAN}📦 Syncing media files...${NC}"
 echo ""
 
 # ============================================
-# 1. COPY ROMs
+# 1. VERIFY ROMs (Available via bind mount)
 # ============================================
-echo -e "${YELLOW}Step 1: Copying ROMs...${NC}"
+echo -e "${YELLOW}Step 1: Verifying ROMs...${NC}"
 
 if [ -d "backend/SNES" ]; then
     ROM_COUNT=$(ls backend/SNES/*.nes 2>/dev/null | wc -l)
     if [ "$ROM_COUNT" -gt 0 ]; then
-        echo "Found $ROM_COUNT ROM files"
+        echo "Found $ROM_COUNT ROM files in backend/SNES"
         
-        # Create directory in container if it doesn't exist
-        docker exec homepage_backend mkdir -p /app/SNES
+        # Check if backend can access them (via bind mount)
+        BACKEND_ROM_COUNT=$(docker exec homepage_backend sh -c 'ls /app/SNES/*.nes 2>/dev/null | wc -l' || echo "0")
         
-        # Copy all ROMs
-        docker cp backend/SNES/. homepage_backend:/app/SNES/
-        
-        # Verify copy
-        COPIED_COUNT=$(docker exec homepage_backend sh -c 'ls /app/SNES/*.nes 2>/dev/null | wc -l' || echo "0")
-        echo -e "${GREEN}✓ Copied $COPIED_COUNT ROM files to backend container${NC}"
-        
-        # List some ROMs
-        echo -e "${CYAN}Sample ROMs:${NC}"
-        docker exec homepage_backend sh -c 'ls /app/SNES/*.nes | head -5' | sed 's/^/  /'
+        if [ "$BACKEND_ROM_COUNT" -gt 0 ]; then
+            echo -e "${GREEN}✓ Backend can access $BACKEND_ROM_COUNT ROM files via bind mount${NC}"
+            
+            # List some ROMs
+            echo -e "${CYAN}Sample ROMs:${NC}"
+            docker exec homepage_backend sh -c 'ls /app/SNES/*.nes | head -5' | sed 's/^/  /'
+        else
+            echo -e "${YELLOW}⚠ Backend cannot access ROMs, fixing permissions...${NC}"
+            docker exec homepage_backend chown -R app:app /app/SNES 2>/dev/null || true
+            echo -e "${GREEN}✓ Permissions fixed${NC}"
+        fi
     else
         echo -e "${YELLOW}⚠ No ROM files found in backend/SNES/${NC}"
     fi

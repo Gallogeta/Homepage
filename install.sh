@@ -375,27 +375,39 @@ except Exception as e:
 "
 
 # ============================================
-# 7.5 COPY MEDIA FILES (ROMs, Music, etc.)
+# 7.5 VERIFY MEDIA FILES (ROMs, Music, etc.)
 # ============================================
 echo ""
-echo -e "${CYAN}📦 Step 7.5: Copying media files (ROMs, music, etc.)...${NC}"
+echo -e "${CYAN}📦 Step 7.5: Verifying media files (ROMs, music, etc.)...${NC}"
 
-# Copy ROMs to backend
+# Check ROMs - they're available via bind mount
 if [ -d "backend/SNES" ]; then
-    echo "Copying ROMs to backend container..."
-    docker cp backend/SNES/. homepage_backend:/app/SNES/
-    echo -e "${GREEN}✓ ROMs copied ($(ls backend/SNES/*.nes 2>/dev/null | wc -l) files)${NC}"
+    ROM_COUNT=$(ls backend/SNES/*.nes 2>/dev/null | wc -l)
+    if [ "$ROM_COUNT" -gt 0 ]; then
+        echo -e "${GREEN}✓ ROMs available via bind mount ($ROM_COUNT files)${NC}"
+        # Verify backend can access them
+        BACKEND_ROM_COUNT=$(docker exec homepage_backend sh -c 'ls /app/SNES/*.nes 2>/dev/null | wc -l' || echo "0")
+        if [ "$BACKEND_ROM_COUNT" -gt 0 ]; then
+            echo -e "${GREEN}✓ Backend can access $BACKEND_ROM_COUNT ROM files${NC}"
+        else
+            echo -e "${YELLOW}⚠ Backend cannot access ROMs, checking permissions...${NC}"
+            docker exec homepage_backend chown -R app:app /app/SNES 2>/dev/null || true
+        fi
+    else
+        echo -e "${YELLOW}⚠ No ROM files found in backend/SNES/${NC}"
+    fi
 else
     echo -e "${YELLOW}⚠ No ROMs directory found${NC}"
 fi
 
-# Copy music files to uploads
+# Copy music files to uploads volume (not bind mounted)
 if [ -d "frontend/public/media" ]; then
-    echo "Copying music and media files..."
-    # Copy to Docker volume
-    sudo mkdir -p /var/lib/docker/volumes/homepage_uploads_data/_data/media
-    sudo cp -r frontend/public/media/* /var/lib/docker/volumes/homepage_uploads_data/_data/media/ 2>/dev/null || true
-    echo -e "${GREEN}✓ Media files copied${NC}"
+    echo "Copying music and media files to uploads volume..."
+    mkdir -p /var/lib/docker/volumes/homepage_uploads_data/_data/media
+    cp -r frontend/public/media/* /var/lib/docker/volumes/homepage_uploads_data/_data/media/ 2>/dev/null || true
+    
+    MUSIC_COUNT=$(find /var/lib/docker/volumes/homepage_uploads_data/_data/media -name "*.mp3" 2>/dev/null | wc -l || echo "0")
+    echo -e "${GREEN}✓ Music files copied ($MUSIC_COUNT files)${NC}"
 else
     echo -e "${YELLOW}⚠ No media directory found${NC}"
 fi
@@ -403,11 +415,11 @@ fi
 # Copy any additional uploads
 if [ -d "backend/uploads" ]; then
     echo "Copying additional uploads..."
-    sudo cp -r backend/uploads/* /var/lib/docker/volumes/homepage_uploads_data/_data/ 2>/dev/null || true
+    cp -r backend/uploads/* /var/lib/docker/volumes/homepage_uploads_data/_data/ 2>/dev/null || true
     echo -e "${GREEN}✓ Additional uploads copied${NC}"
 fi
 
-echo -e "${GREEN}✓ All media files synced${NC}"
+echo -e "${GREEN}✓ All media files ready${NC}"
 
 # ============================================
 # 8. SYNC FRONTEND BUILD
