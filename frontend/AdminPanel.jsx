@@ -3,20 +3,33 @@ import React, { useEffect, useState } from "react";
 export default function AdminPanel() {
   const [users, setUsers] = useState([]);
   const [error, setError] = useState("");
-  const [ipInfo, setIpInfo] = useState({});
   const [showCreate, setShowCreate] = useState(false);
   const [newUser, setNewUser] = useState({ username: "", password: "", email: "" });
   const [creating, setCreating] = useState(false);
 
-  useEffect(() => {
-    // Fetch users
+  const fetchUsers = () => {
     fetch('/api/admin/users', {
       headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
     })
-    .then(res => res.json())
-    .then(data => setUsers(data))
-    .catch(err => setError('Failed to load users'));
+    .then(res => {
+      if (!res.ok) throw new Error('Failed to fetch users');
+      return res.json();
+    })
+    .then(data => {
+      setUsers(data);
+      setError('');
+    })
+    .catch(err => setError('Failed to load users: ' + err.message));
+  };
+
+  useEffect(() => {
+    fetchUsers();
   }, []);
+
+  const handleCreateUser = (e) => {
+    e.preventDefault();
+    createUser();
+  };
 
   const createUser = async () => {
     setCreating(true);
@@ -30,18 +43,21 @@ export default function AdminPanel() {
         },
         body: JSON.stringify(newUser)
       });
-      if (!res.ok) throw new Error(await res.text());
-      const data = await res.json();
-      setUsers([...users, { username: newUser.username, email: newUser.email || '', is_verified: true, is_approved: true, role: 'user' }]);
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(errText);
+      }
       setShowCreate(false);
       setNewUser({ username: "", password: "", email: "" });
+      fetchUsers();
     } catch (err) {
       setError(err.message);
     }
     setCreating(false);
-  }
+  };
 
   const deleteUser = async (username) => {
+    if (!confirm(`Delete user ${username}?`)) return;
     try {
       const res = await fetch(`/api/admin/users/${username}/delete`, {
         method: 'POST',
@@ -50,13 +66,14 @@ export default function AdminPanel() {
         }
       });
       if (!res.ok) throw new Error(await res.text());
-      setUsers(users.filter(u => u.username !== username));
+      fetchUsers();
     } catch (err) {
       setError(err.message);
     }
-  }
+  };
 
   const banUser = async (username) => {
+    if (!confirm(`Ban user ${username}?`)) return;
     try {
       const res = await fetch(`/api/admin/users/${username}/ban`, {
         method: 'POST',
@@ -65,11 +82,11 @@ export default function AdminPanel() {
         }
       });
       if (!res.ok) throw new Error(await res.text());
-      setUsers(users.map(u => u.username === username ? {...u, is_approved: false} : u));
+      fetchUsers();
     } catch (err) {
       setError(err.message);
     }
-  }
+  };
 
   const verifyUser = async (username) => {
     try {
@@ -80,51 +97,81 @@ export default function AdminPanel() {
         }
       });
       if (!res.ok) throw new Error(await res.text());
-      setUsers(users.map(u => u.username === username ? {...u, is_verified: true} : u));
+      fetchUsers();
     } catch (err) {
       setError(err.message);
     }
-  }
+  };
 
   return (
-  <div className="bg-black border border-gold p-4 rounded text-gold w-full" style={{margin: 0, position: 'relative', top: '-8rem', fontSize: '0.95rem', overflow: 'auto', maxHeight: '500px', textAlign: 'center', borderRadius: 0, width: '100%', maxWidth: '100vw', left: 0, alignSelf: 'flex-start'}}>
-      <h3 className="text-xl mb-2 border-b border-gold pb-2">User Management</h3>
-      {error && <div className="text-red-500 mb-2">{error}</div>}
-      <table className="w-full text-gold border-separate border-spacing-0 mb-4" style={{borderCollapse: 'separate', fontSize: '0.95rem', tableLayout: 'fixed', textAlign: 'center', minWidth: '700px'}}>
-        <colgroup>
-          <col style={{width: '20%'}} />
-          <col style={{width: '25%'}} />
-          <col style={{width: '15%'}} />
-          <col style={{width: '15%'}} />
-          <col style={{width: '25%'}} />
-        </colgroup>
-        <thead>
-          <tr>
-            <th className="border border-gold p-2 truncate">Username</th>
-            <th className="border border-gold p-2 truncate">Email</th>
-            <th className="border border-gold p-2 truncate">Verified</th>
-            <th className="border border-gold p-2 truncate">Approved</th>
-            <th className="border border-gold p-2 truncate">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map(u => (
-            <tr key={u.username}>
-              <td className="border border-gold p-2 truncate" title={u.username}>{u.username}</td>
-              <td className="border border-gold p-2 truncate" title={u.email}>{u.email}</td>
-              <td className="border border-gold p-2 truncate">{u.is_verified ? 'Yes' : 'No'}</td>
-              <td className="border border-gold p-2 truncate">{u.is_approved ? 'Yes' : 'No'}</td>
-                            <td className="border border-gold p-2">
-                <button className="header-btn mr-2" onClick={() => deleteUser(u.username)}>Delete</button>
-                <button className="header-btn mr-2" onClick={() => banUser(u.username)}>Ban</button>
-                {!u.is_verified && <button className="header-btn mr-2" onClick={() => verifyUser(u.username)}>Verify</button>}
-                <button className="header-btn mr-2">Reset PW</button>
-                <button className="header-btn">Edit</button>
-              </td>
+    <div className="bg-black border border-gold p-4 rounded text-gold w-full" style={{marginTop: '2rem', fontSize: '0.95rem', overflow: 'auto', maxHeight: '600px', width: '100%', maxWidth: '100vw'}}>
+      <h3 className="text-xl mb-4 border-b border-gold pb-2">User Management</h3>
+      {error && <div className="text-red-500 mb-2 p-2 border border-red-500 rounded">{error}</div>}
+      
+      <div className="overflow-x-auto">
+        <table className="w-full text-gold border-collapse mb-4" style={{fontSize: '0.95rem', minWidth: '800px'}}>
+          <thead>
+            <tr className="border-b-2 border-gold">
+              <th className="p-3 text-left">Username</th>
+              <th className="p-3 text-left">Email</th>
+              <th className="p-3 text-center">Role</th>
+              <th className="p-3 text-center">Verified</th>
+              <th className="p-3 text-center">Approved</th>
+              <th className="p-3 text-center">Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {users.map(u => (
+              <tr key={u.username} className="border-b border-gold hover:bg-gold hover:bg-opacity-10">
+                <td className="p-3 text-left">{u.username}</td>
+                <td className="p-3 text-left">{u.email || '-'}</td>
+                <td className="p-3 text-center">
+                  <span className={u.role === 'admin' ? 'text-yellow-400 font-bold' : ''}>{u.role || 'user'}</span>
+                </td>
+                <td className="p-3 text-center">
+                  {u.is_verified ? (
+                    <span className="text-green-400">✓ Yes</span>
+                  ) : (
+                    <span className="text-red-400">✗ No</span>
+                  )}
+                </td>
+                <td className="p-3 text-center">
+                  {u.is_approved ? (
+                    <span className="text-green-400">✓ Yes</span>
+                  ) : (
+                    <span className="text-red-400">✗ No</span>
+                  )}
+                </td>
+                <td className="p-3 text-center">
+                  <div className="flex gap-2 justify-center flex-wrap">
+                    {!u.is_verified && (
+                      <button 
+                        className="header-btn px-2 py-1 text-sm"
+                        onClick={() => verifyUser(u.username)}
+                      >
+                        Verify Email
+                      </button>
+                    )}
+                    <button 
+                      className="header-btn px-2 py-1 text-sm"
+                      onClick={() => banUser(u.username)}
+                    >
+                      Ban
+                    </button>
+                    <button 
+                      className="header-btn px-2 py-1 text-sm"
+                      onClick={() => deleteUser(u.username)}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      
       <button className="header-btn w-full mb-2" onClick={() => setShowCreate(v => !v)}>
         {showCreate ? "Cancel" : "Create New User"}
       </button>
