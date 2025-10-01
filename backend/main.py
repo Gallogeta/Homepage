@@ -56,6 +56,7 @@ class User(Base):
     is_approved = Column(Boolean, default=True)
     failed_count = Column(Integer, default=0)
     locked_until = Column(Integer, default=0)  # epoch seconds
+    role = Column(String, default="user")  # user, moderator, admin
 
 class Page(Base):
     __tablename__ = "pages"
@@ -117,6 +118,10 @@ def _run_sqlite_migrations_if_needed():
             cur.execute("ALTER TABLE users ADD COLUMN failed_count INTEGER DEFAULT 0")
         if not _sqlite_has_column(raw, 'users', 'locked_until'):
             cur.execute("ALTER TABLE users ADD COLUMN locked_until INTEGER DEFAULT 0")
+        if not _sqlite_has_column(raw, 'users', 'role'):
+            cur.execute("ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'user'")
+            # Set admin user role
+            cur.execute(f"UPDATE users SET role = 'admin' WHERE LOWER(username) = LOWER('{ADMIN_USER}')")
         # Add indexes (safe idempotent creation)
         cur.execute("CREATE UNIQUE INDEX IF NOT EXISTS ix_users_username ON users(username)")
         cur.execute("CREATE UNIQUE INDEX IF NOT EXISTS ix_users_email ON users(email)")
@@ -739,7 +744,7 @@ def _validate_password(pw: str) -> None:
     if classes < 3:
         raise HTTPException(status_code=400, detail="Password must include 3 of: lower, upper, digit, symbol")
 
-@app.post("/register")
+@app.post("/api/register")
 async def register(req: RegisterRequest, request: FastAPIRequest, db: Session = Depends(get_db)):
     # Gate registration
     if not REGISTRATION_OPEN and (not REGISTRATION_CODE or req.code != REGISTRATION_CODE):
@@ -785,7 +790,7 @@ async def register(req: RegisterRequest, request: FastAPIRequest, db: Session = 
 @app.get("/api/admin/users")
 def list_users(_: str = Depends(admin_required), db: Session = Depends(get_db)):
     users = db.query(User).all()
-    return [{"username": u.username, "email": u.email, "is_verified": u.is_verified, "is_approved": u.is_approved, "role": u.role} for u in users]
+    return [{"username": u.username, "email": u.email, "is_verified": u.is_verified, "is_approved": u.is_approved, "role": u.role or "user"} for u in users]
 
 @app.post("/admin/users")
 def create_user(req: dict, _: str = Depends(admin_required), db: Session = Depends(get_db)):
@@ -806,7 +811,7 @@ FAILED_LOGIN_WINDOW = 900  # 15 minutes
 FAILED_LOGIN_LIMIT_PER_IP = 20
 FAILED_LOGIN_LIMIT_PER_USER = 8
 
-@app.post("/token")
+@app.post("/api/token")
 def login(request: FastAPIRequest, form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     ip = _client_ip_simple(request)
     # Rate limits for login attempts
@@ -972,6 +977,44 @@ def admin_verify_user(username: str, _: str = Depends(admin_required), db: Sessi
     if not u:
         raise HTTPException(status_code=404, detail="User not found")
     u.is_verified = True
+    db.commit()
+    return {"ok": True}
+
+@app.post("/api/admin/users/{username}/update")
+def admin_update_user(username: str, req: dict, _: str = Depends(admin_required), db: Session = Depends(get_db)):
+    u = db.query(User).filter(func.lower(User.username) == username.lower()).first()
+    if not u:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Update username if provided and different
+    new_username = req.get("username", "").strip()
+    if new_username and new_username != u.username:
+        # Check if new username already exists
+        existing = db.query(User).filter(func.lower(User.username) == new_username.lower()).first()
+        if existing:
+            raise HTTPException(status_code=400, detail="Username already exists")
+        u.username = new_username
+    
+    # Update email if provided
+    new_email = req.get("email", "").strip()
+    if new_email != u.email:
+        # Check if new email already exists (if not empty)
+        if new_email:
+            existing = db.query(User).filter(func.lower(User.email) == new_email.lower()).first()
+            if existing and existing.id != u.id:
+                raise HTTPException(status_code=400, detail="Email already exists")
+        u.email = new_email if new_email else None
+    
+    # Update role if provided
+    new_role = req.get("role", "").strip()
+    if new_role and new_role in ["user", "moderator", "admin"]:
+        u.role = new_role
+    
+    # Update password if provided
+    new_password = req.get("newPassword", "").strip()
+    if new_password:
+        u.hashed_password = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt()).decode('utf-8')
+    
     db.commit()
     return {"ok": True}
 

@@ -6,6 +6,8 @@ export default function AdminPanel() {
   const [showCreate, setShowCreate] = useState(false);
   const [newUser, setNewUser] = useState({ username: "", password: "", email: "" });
   const [creating, setCreating] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
+  const [editForm, setEditForm] = useState({ username: "", email: "", role: "", newPassword: "" });
 
   const fetchUsers = () => {
     fetch('/api/admin/users', {
@@ -103,6 +105,35 @@ export default function AdminPanel() {
     }
   };
 
+  const startEdit = (user) => {
+    setEditingUser(user.username);
+    setEditForm({ username: user.username, email: user.email || "", role: user.role || "user", newPassword: "" });
+  };
+
+  const cancelEdit = () => {
+    setEditingUser(null);
+    setEditForm({ username: "", email: "", role: "", newPassword: "" });
+  };
+
+  const saveUser = async (originalUsername) => {
+    try {
+      const res = await fetch(`/api/admin/users/${originalUsername}/update`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(editForm)
+      });
+      if (!res.ok) throw new Error(await res.text());
+      setEditingUser(null);
+      setEditForm({ username: "", email: "", newPassword: "" });
+      fetchUsers();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   return (
     <div className="bg-black border border-gold p-4 rounded text-gold w-full" style={{marginTop: '2rem', fontSize: '0.95rem', overflow: 'auto', maxHeight: '600px', width: '100%', maxWidth: '100vw'}}>
       <h3 className="text-xl mb-4 border-b border-gold pb-2">User Management</h3>
@@ -123,10 +154,44 @@ export default function AdminPanel() {
           <tbody>
             {users.map(u => (
               <tr key={u.username} className="border-b border-gold hover:bg-gold hover:bg-opacity-10">
-                <td className="p-3 text-left">{u.username}</td>
-                <td className="p-3 text-left">{u.email || '-'}</td>
+                <td className="p-3 text-left">
+                  {editingUser === u.username ? (
+                    <input
+                      className="bg-black border border-gold px-2 py-1 text-gold focus:outline-none w-full"
+                      value={editForm.username}
+                      onChange={e => setEditForm({ ...editForm, username: e.target.value })}
+                    />
+                  ) : (
+                    u.username
+                  )}
+                </td>
+                <td className="p-3 text-left">
+                  {editingUser === u.username ? (
+                    <input
+                      className="bg-black border border-gold px-2 py-1 text-gold focus:outline-none w-full"
+                      type="email"
+                      value={editForm.email}
+                      onChange={e => setEditForm({ ...editForm, email: e.target.value })}
+                      placeholder="Email"
+                    />
+                  ) : (
+                    u.email || '-'
+                  )}
+                </td>
                 <td className="p-3 text-center">
-                  <span className={u.role === 'admin' ? 'text-yellow-400 font-bold' : ''}>{u.role || 'user'}</span>
+                  {editingUser === u.username ? (
+                    <select
+                      className="bg-black border border-gold px-2 py-1 text-gold focus:outline-none"
+                      value={editForm.role}
+                      onChange={e => setEditForm({ ...editForm, role: e.target.value })}
+                    >
+                      <option value="user">User</option>
+                      <option value="moderator">Moderator</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                  ) : (
+                    <span className={u.role === 'admin' ? 'text-yellow-400 font-bold' : u.role === 'moderator' ? 'text-blue-400 font-semibold' : ''}>{u.role || 'user'}</span>
+                  )}
                 </td>
                 <td className="p-3 text-center">
                   {u.is_verified ? (
@@ -143,28 +208,60 @@ export default function AdminPanel() {
                   )}
                 </td>
                 <td className="p-3 text-center">
-                  <div className="flex gap-2 justify-center flex-wrap">
-                    {!u.is_verified && (
+                  {editingUser === u.username ? (
+                    <div className="flex flex-col gap-2">
+                      <input
+                        className="bg-black border border-gold px-2 py-1 text-gold focus:outline-none text-center text-sm"
+                        type="password"
+                        value={editForm.newPassword}
+                        onChange={e => setEditForm({ ...editForm, newPassword: e.target.value })}
+                        placeholder="New Password (optional)"
+                      />
+                      <div className="flex gap-2 justify-center">
+                        <button 
+                          className="header-btn px-3 py-1 text-sm bg-green-600"
+                          onClick={() => saveUser(u.username)}
+                        >
+                          Save
+                        </button>
+                        <button 
+                          className="header-btn px-3 py-1 text-sm bg-gray-600"
+                          onClick={cancelEdit}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2 justify-center flex-wrap">
                       <button 
                         className="header-btn px-2 py-1 text-sm"
-                        onClick={() => verifyUser(u.username)}
+                        onClick={() => startEdit(u)}
                       >
-                        Verify Email
+                        Edit
                       </button>
-                    )}
-                    <button 
-                      className="header-btn px-2 py-1 text-sm"
-                      onClick={() => banUser(u.username)}
-                    >
-                      Ban
-                    </button>
-                    <button 
-                      className="header-btn px-2 py-1 text-sm"
-                      onClick={() => deleteUser(u.username)}
-                    >
-                      Delete
-                    </button>
-                  </div>
+                      {!u.is_verified && (
+                        <button 
+                          className="header-btn px-2 py-1 text-sm"
+                          onClick={() => verifyUser(u.username)}
+                        >
+                          Verify Email
+                        </button>
+                      )}
+                      <button 
+                        className="header-btn px-2 py-1 text-sm"
+                        onClick={() => banUser(u.username)}
+                      >
+                        Ban
+                      </button>
+                      <button 
+                        className="header-btn px-2 py-1 text-sm"
+                        onClick={() => deleteUser(u.username)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  )}
                 </td>
               </tr>
             ))}
