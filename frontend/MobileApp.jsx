@@ -146,7 +146,7 @@ export default function MobileApp() {
 
   // User authentication check
   useEffect(() => {
-    const token = localStorage.getItem("authToken");
+    const token = localStorage.getItem("token");
     if (token) {
       // Verify token with backend
       fetch("/api/verify", {
@@ -176,7 +176,7 @@ export default function MobileApp() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("authToken");
+    localStorage.removeItem("token");
     setUser(null);
     setSidebarOpen(false);
   };
@@ -292,15 +292,41 @@ export default function MobileApp() {
       </Suspense>
     ),
     arcade: (
-      <div className="mobile-page-content">
-        <div className="mobile-page-title">Arcade Games</div>
-        <div className="mobile-text-content">Play retro games in your browser!</div>
-        <button 
-          className="mobile-btn"
-          onClick={() => window.open('/arcade.html', '_blank')}
-        >
-          Open Arcade
-        </button>
+      <div className="mobile-arcade-container">
+        <div className="mobile-arcade-header">
+          <h2 className="mobile-page-title">🎮 Arcade Games</h2>
+          <p className="mobile-text-content" style={{ marginBottom: '1rem' }}>
+            Play retro NES/SNES games with music!
+          </p>
+        </div>
+        
+        <div className="mobile-arcade-content">
+          <iframe
+            src="/arcade.html"
+            className="mobile-arcade-iframe"
+            title="Arcade"
+            style={{
+              width: '100%',
+              height: '70vh',
+              border: '2px solid #ffd700',
+              borderRadius: '8px',
+              background: '#000'
+            }}
+            allowFullScreen
+          />
+        </div>
+        
+        <div className="mobile-arcade-hint" style={{
+          marginTop: '1rem',
+          padding: '0.75rem',
+          background: 'rgba(255, 215, 0, 0.1)',
+          border: '1px solid #ffd700',
+          borderRadius: '8px',
+          fontSize: '0.9rem',
+          textAlign: 'center'
+        }}>
+          💡 Tip: Rotate your device horizontally for better gaming experience!
+        </div>
       </div>
     ),
   };
@@ -374,6 +400,22 @@ export default function MobileApp() {
                   )
                 ))}
               </div>
+              
+              {user && (
+                <div className="mobile-menu-section">
+                  <h4>Services</h4>
+                  <a
+                    className="mobile-menu-item"
+                    href="https://jellyfin.itsusi.eu"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setSidebarOpen(false)}
+                    style={{ color: '#7f5fff', borderColor: '#7f5fff' }}
+                  >
+                    🎬 Jellyfin
+                  </a>
+                </div>
+              )}
               
               {user && (
                 <div className="mobile-menu-section">
