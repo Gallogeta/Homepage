@@ -4,6 +4,7 @@ import "./mobile.css";
 // Import existing components but use mobile-optimized versions where needed
 const MobileContactForm = React.lazy(() => import("./MobileContactForm"));
 const MobileWhatsAppWidget = React.lazy(() => import("./MobileWhatsAppWidget"));
+const MobileArcade = React.lazy(() => import("./MobileArcade"));
 
 // Mobile Auth Form component
 const MobileAuthForm = ({ mode, onAuth, onClose }) => {
@@ -292,42 +293,9 @@ export default function MobileApp() {
       </Suspense>
     ),
     arcade: (
-      <div className="mobile-arcade-container">
-        <div className="mobile-arcade-header">
-          <h2 className="mobile-page-title">🎮 Arcade Games</h2>
-          <p className="mobile-text-content" style={{ marginBottom: '1rem' }}>
-            Play retro NES/SNES games with music!
-          </p>
-        </div>
-        
-        <div className="mobile-arcade-content">
-          <iframe
-            src="/arcade.html"
-            className="mobile-arcade-iframe"
-            title="Arcade"
-            style={{
-              width: '100%',
-              height: '70vh',
-              border: '2px solid #ffd700',
-              borderRadius: '8px',
-              background: '#000'
-            }}
-            allowFullScreen
-          />
-        </div>
-        
-        <div className="mobile-arcade-hint" style={{
-          marginTop: '1rem',
-          padding: '0.75rem',
-          background: 'rgba(255, 215, 0, 0.1)',
-          border: '1px solid #ffd700',
-          borderRadius: '8px',
-          fontSize: '0.9rem',
-          textAlign: 'center'
-        }}>
-          💡 Tip: Rotate your device horizontally for better gaming experience!
-        </div>
-      </div>
+      <Suspense fallback={<div className="mobile-text-content">Loading arcade...</div>}>
+        <MobileArcade />
+      </Suspense>
     ),
   };
 
