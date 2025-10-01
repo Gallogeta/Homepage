@@ -17,20 +17,43 @@ const MobileAuthForm = ({ mode, onAuth, onClose }) => {
     setLoading(true);
 
     try {
-      const endpoint = mode === 'login' ? '/api/login' : '/api/register';
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      });
+      if (mode === 'login') {
+        // Use OAuth2 password flow for login
+        const formData = new URLSearchParams();
+        formData.append('username', form.username);
+        formData.append('password', form.password);
 
-      const data = await response.json();
-      
-      if (response.ok) {
-        localStorage.setItem('authToken', data.token);
-        onAuth(data.user);
+        const response = await fetch('/api/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: formData,
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+          localStorage.setItem('token', data.access_token);
+          onAuth({ username: form.username });
+        } else {
+          setError(data.detail || 'Login failed');
+        }
       } else {
-        setError(data.detail || 'Authentication failed');
+        // Register
+        const response = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(form),
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+          setError('');
+          alert('Registration successful! Please login.');
+          onClose();
+        } else {
+          setError(data.detail || 'Registration failed');
+        }
       }
     } catch (err) {
       setError('Network error. Please try again.');
