@@ -157,7 +157,7 @@ API_HOST=0.0.0.0
 API_PORT=8000
 
 # CORS
-ALLOWED_ORIGINS=http://$SERVER_IP:3000,http://localhost:3000,http://$SERVER_IP
+ALLOWED_ORIGINS=http://$SERVER_IP,http://localhost,http://$SERVER_IP:80,http://localhost:80
 
 # Admin User (for initial setup)
 ADMIN_USERNAME=$ADMIN_USER
@@ -169,7 +169,7 @@ PRODUCTION=false
 EOF
     echo "✓ Created backend/.env"
 else
-    sed -i "s|ALLOWED_ORIGINS=.*|ALLOWED_ORIGINS=http://$SERVER_IP:3000,http://localhost:3000|" backend/.env
+    sed -i "s|ALLOWED_ORIGINS=.*|ALLOWED_ORIGINS=http://$SERVER_IP,http://localhost,http://$SERVER_IP:80,http://localhost:80|" backend/.env
     echo "✓ Updated backend/.env"
 fi
 
@@ -296,8 +296,8 @@ echo "   Rebuild:         ./deploy.sh (run this script again)"
 echo ""
 echo -e "${CYAN}🌐 Public Access:${NC}"
 echo "   Configure port forwarding on your router:"
-echo "   Forward port 80 → $SERVER_IP:3000"
-echo "   Forward port 443 → $SERVER_IP:3000 (for HTTPS)"
+echo "   Forward port 80 → $SERVER_IP:80"
+echo "   Forward port 443 → $SERVER_IP:80 (for HTTPS)"
 echo ""
-echo -e "${GREEN}Ready to use! Open http://$SERVER_IP:3000 and login!${NC}"
+echo -e "${GREEN}Ready to use! Open http://$SERVER_IP and login!${NC}"
 echo ""
