@@ -1112,8 +1112,8 @@ function DesktopApp() {
                     } : {}}
                     onClick={() => {
                       if (item.key === "arcade") {
-                        // Navigate in same tab for arcade
-                        window.location.href = item.href;
+                        // Force full page navigation to arcade.html (bypass React router)
+                        window.location.replace('/arcade.html');
                       } else {
                         window.open(item.href, '_blank', 'noopener,noreferrer');
                       }
