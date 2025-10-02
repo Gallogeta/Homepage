@@ -50,7 +50,7 @@ A modern full-stack web application featuring a personal website with an integra
 > Add screenshots of your homepage and arcade here!
 
 ```
-[[Screenshot_20251002_182938.png](https://github.com/Gallogeta/Homepage/blob/main/Screenshot_20251002_182938.png)]
+[[Desktop View](https://github.com/Gallogeta/Homepage/blob/main/Screenshot_20251002_182938.png)]
 [Screenshot placeholder - Mobile View]
 [Screenshot placeholder - Arcade View]
 ```
