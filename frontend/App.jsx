@@ -1137,7 +1137,7 @@ function DesktopApp() {
                       color: '#7f5fff',
                       fontWeight: 600
                     }}
-                    onClick={() => window.open('https://jellyfin.itsusi.eu', '_blank')}
+                    onClick={() => window.open('http://192.168.0.167:8096', '_blank')}
                   >
                     Jellyfin
                   </button>

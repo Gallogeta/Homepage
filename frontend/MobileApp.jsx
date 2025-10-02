@@ -377,7 +377,7 @@ export default function MobileApp() {
                   <h4>Services</h4>
                   <a
                     className="mobile-menu-item"
-                    href="https://jellyfin.itsusi.eu"
+                    href="http://192.168.0.167:8096"
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => setSidebarOpen(false)}
