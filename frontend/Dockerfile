@@ -25,6 +25,8 @@ RUN npm install -g serve
 
 # Copy built files from builder stage
 COPY --from=builder /app/dist ./dist
+# Force cache busting
+RUN echo "Build timestamp: $(date)" > /tmp/build-timestamp
 COPY --from=builder /app/package.json ./
 
 # Create non-root user
