@@ -279,9 +279,9 @@
                 window.EJS_disableDatabases = true;
                 window.EJS_threads = enableThreads;
                 
-                // Audio optimization for smoother playback
-                window.EJS_audioSample = 1024; // Larger buffer = smoother audio (512, 1024, 2048)
-                window.EJS_audioLatency = 0.08; // Slight latency for stability (0.05-0.1)
+                // Audio optimization for low-memory environments
+                window.EJS_audioSample = 512; // Smaller buffer for low RAM (was 1024)
+                window.EJS_audioLatency = 0.05; // Reduced latency
 
                 script.src = "data/loader.js";
                 document.body.appendChild(script);
