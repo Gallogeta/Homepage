@@ -375,16 +375,27 @@ export default function MobileApp() {
               {user && (
                 <div className="mobile-menu-section">
                   <h4>Services</h4>
-                  <a
+                  <button
                     className="mobile-menu-item"
-                    href="http://192.168.0.167:8096"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => setSidebarOpen(false)}
+                    onClick={() => {
+                      // Detect if user is on local network (192.168.0.x or localhost)
+                      const hostname = window.location.hostname;
+                      const isLocalNetwork = hostname.startsWith('192.168.') || 
+                                           hostname === 'localhost' || 
+                                           hostname === '127.0.0.1';
+                      
+                      // Use local IP for internal users, external domain for external users
+                      const jellyfinUrl = isLocalNetwork 
+                        ? 'http://192.168.0.167:8096' 
+                        : 'https://jellyfin.itsusi.eu';
+                      
+                      window.open(jellyfinUrl, '_blank', 'noopener,noreferrer');
+                      setSidebarOpen(false);
+                    }}
                     style={{ color: '#7f5fff', borderColor: '#7f5fff' }}
                   >
                     🎬 Jellyfin
-                  </a>
+                  </button>
                 </div>
               )}
               

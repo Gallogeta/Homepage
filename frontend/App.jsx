@@ -1137,7 +1137,20 @@ function DesktopApp() {
                       color: '#7f5fff',
                       fontWeight: 600
                     }}
-                    onClick={() => window.open('http://192.168.0.167:8096', '_blank')}
+                    onClick={() => {
+                      // Detect if user is on local network (192.168.0.x or localhost)
+                      const hostname = window.location.hostname;
+                      const isLocalNetwork = hostname.startsWith('192.168.') || 
+                                           hostname === 'localhost' || 
+                                           hostname === '127.0.0.1';
+                      
+                      // Use local IP for internal users, external domain for external users
+                      const jellyfinUrl = isLocalNetwork 
+                        ? 'http://192.168.0.167:8096' 
+                        : 'https://jellyfin.itsusi.eu';
+                      
+                      window.open(jellyfinUrl, '_blank');
+                    }}
                   >
                     Jellyfin
                   </button>
