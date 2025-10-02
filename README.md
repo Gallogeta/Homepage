@@ -58,10 +58,7 @@ FastAPI React 🏗️ Architecture
 
 **Built with ❤️ by retro gaming enthusiasts**
 
-*Disclaimer: This project is for educational purposes. Ensure you own or have the right to use any ROM files.*logo=react&logoColor=black)](https://reactjs.org/)
-[![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white)](https://www.docker.com/)
-[![Python](https://img.shields.io/badge/Python-3.9+-3776AB?style=flat&logo=python&logoColor=white)](https://www.python.org/)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+*Disclaimer: This project is for educational purposes. Ensure you own or have the right to use any ROM files. In screenshots they are only names and placehoslders, in actuality, I do not have those ROMs.
 
 ---
 
