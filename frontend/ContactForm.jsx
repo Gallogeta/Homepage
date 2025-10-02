@@ -44,7 +44,7 @@ export default function ContactForm({ initialSubject = "", initialMessage = "", 
     }
     setLoading(true);
     try {
-  const res = await fetch(`${apiBase}/contact`, { // FIXED: Cache-busted double /api/ path issue - v3 - FORCE REBUILD
+  const res = await fetch(`${apiBase}/contact?t=${Date.now()}`, { // FIXED: Cache-busted double /api/ path issue - v4 - FORCE REBUILD
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...form, plan })
