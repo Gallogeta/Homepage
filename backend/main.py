@@ -1152,9 +1152,10 @@ def _mask_ip(ip: str) -> str:
 
 @app.post("/api/visitors/ping")
 async def visitors_ping(req: FastAPIRequest):
+    import time
     ip = _client_ip_simple(req)
     ua = req.headers.get("user-agent", "")
-    now = datetime.utcnow()
+    now = time.time()
     with VISITOR_LOCK:
         v = VISITORS.get(ip)
         if not v:
@@ -1172,7 +1173,7 @@ async def visitors_ping(req: FastAPIRequest):
             v["ua"] = ua or v.get("ua")
             v["os"] = _os_letter(ua or v.get("ua", ""))
             v["pings"] = int(v.get("pings", 0)) + 1
-    dur = (now - v["first_seen"]).total_seconds()
+    dur = now - v["first_seen"]
     return {"ok": True, "ip": ip, "os": v["os"], "dur_sec": int(dur)}
 
 @app.get("/visitors/active")
