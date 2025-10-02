@@ -45,10 +45,10 @@ services:
       - "443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro  # SSL certificates
       - uploads_data:/var/www/uploads:ro  # Serve uploads directly
       - ./frontend/public:/var/www/html:ro   # Serve public files directly
       - frontend_build:/var/www/build:ro  # Serve React build files
-      - /etc/letsencrypt:/etc/letsencrypt:ro  # SSL certificates
     networks:
       - homepage_network
     depends_on:
