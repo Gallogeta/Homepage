@@ -50,7 +50,7 @@ A modern full-stack web application featuring a personal website with an integra
 > Add screenshots of your homepage and arcade here!
 
 ```
-![Desktop View](Screenshot_20251002_182938.png)
+[![Desktop View](Screenshot_20251002_182938.png)](Screenshot_20251002_182938.png)
 [Screenshot placeholder - Mobile View]
 [Screenshot placeholder - Arcade View]
 ```
