@@ -47,13 +47,11 @@ A modern full-stack web application featuring a personal website with an integra
 
 ## 📸 Screenshots
 
-> Add screenshots of your homepage and arcade here!
+### Desktop View
+![Desktop View - Homepage](Screenshot_20251002_182938.png)
 
-```
-[![Desktop View](Screenshot_20251002_182938.png)](Screenshot_20251002_182938.png)
-[Screenshot placeholder - Mobile View]
-[Screenshot placeholder - Arcade View]
-```
+### Arcade View  
+![Arcade View - Retro Gaming](Screenshot_20251002_183940.png)
 
 ---
 
