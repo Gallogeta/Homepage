@@ -1,118 +1,234 @@
-#!/bin/bash
-# Homepage Deployment Script
+#!/bin/bash#!/bin/bash
+
+# Homepage Docker Deployment Script# Homepage Deployment Script
+
+# Simple docker-compose deployment
+
+set -e
 
 set -e
 
 # Colors
-CYAN='\033[0;36m'
-NC='\033[0m'
 
-echo -e "${CYAN}"
-echo "═══════════════════════════════════════════"
-echo "   ___   _   _    _    ___   ___  ___ _____ _   "
-echo "  / __| /_\ | |  | |  / _ \ / _ \| __|_   _/_\  "
-echo " | (_ |/ _ \| |__| |_| (_) | (_) | _|  | |/ _ \ "
-echo "  \___/_/ \_\____|____\___/ \___/|___| |_/_/ \_\\"
-echo ""
-echo "         Made by GALLOGETA"
-echo "═══════════════════════════════════════════"
-echo -e "${NC}"
-echo ""
-echo "🚀 Deploying Homepage..."
+# ColorsCYAN='\033[0;36m'
 
-# Stop existing containers
-
-# Colors for outputecho "⏹️  Stopping existing containers..."
-
-RED='\033[0;31m'docker-compose down
+RED='\033[0;31m'NC='\033[0m'
 
 GREEN='\033[0;32m'
 
-YELLOW='\033[1;33m'# Pull latest changes (if using git)
+YELLOW='\033[1;33m'echo -e "${CYAN}"
 
-BLUE='\033[0;34m'# echo "📥 Pulling latest changes..."
+CYAN='\033[0;36m'echo "═══════════════════════════════════════════"
 
-NC='\033[0m' # No Color# git pull origin main
+NC='\033[0m' # No Colorecho "   ___   _   _    _    ___   ___  ___ _____ _   "
+
+echo "  / __| /_\ | |  | |  / _ \ / _ \| __|_   _/_\  "
+
+echo -e "${CYAN}"echo " | (_ |/ _ \| |__| |_| (_) | (_) | _|  | |/ _ \ "
+
+echo "═══════════════════════════════════════════"echo "  \___/_/ \_\____|____\___/ \___/|___| |_/_/ \_\\"
+
+echo "   ___   _   _    _    ___   ___  ___ _____ _   "echo ""
+
+echo "  / __| /_\ | |  | |  / _ \ / _ \| __|_   _/_\  "echo "         Made by GALLOGETA"
+
+echo " | (_ |/ _ \| |__| |_| (_) | (_) | _|  | |/ _ \ "echo "═══════════════════════════════════════════"
+
+echo "  \___/_/ \_\____|____\___/ \___/|___| |_/_/ \_\\"echo -e "${NC}"
+
+echo ""echo ""
+
+echo "         Made by GALLOGETA"echo "🚀 Deploying Homepage..."
+
+echo "═══════════════════════════════════════════"
+
+echo -e "${NC}"# Stop existing containers
+
+echo ""
+
+# Colors for outputecho "⏹️  Stopping existing containers..."
+
+echo "🚀 Deploying Homepage..."
+
+echo ""RED='\033[0;31m'docker-compose down
 
 
 
-# Configuration# Build and start containers
+# Check if Docker is installedGREEN='\033[0;32m'
 
-REPO_URL="https://github.com/Gallogeta/Homepage.git"echo "🔨 Building and starting containers..."
+if ! command -v docker &> /dev/null; then
 
-DEPLOY_DIR="/opt/homepage"docker-compose up -d --build
+    echo -e "${RED}Error: Docker is not installed${NC}"YELLOW='\033[1;33m'# Pull latest changes (if using git)
+
+    echo "Please install Docker first:"
+
+    echo "  sudo apt-get update"BLUE='\033[0;34m'# echo "📥 Pulling latest changes..."
+
+    echo "  sudo apt-get install -y docker.io docker-compose"
+
+    exit 1NC='\033[0m' # No Color# git pull origin main
+
+fi
+
+
+
+# Check if docker-compose is installed  
+
+if ! command -v docker-compose &> /dev/null; then# Configuration# Build and start containers
+
+    echo -e "${RED}Error: docker-compose is not installed${NC}"
+
+    echo "Please install docker-compose first:"REPO_URL="https://github.com/Gallogeta/Homepage.git"echo "🔨 Building and starting containers..."
+
+    echo "  sudo apt-get install -y docker-compose"
+
+    exit 1DEPLOY_DIR="/opt/homepage"docker-compose up -d --build
+
+fi
 
 DOMAIN="itsusi.eu"
 
-SERVER_IP="192.168.0.90"# Wait for services to be ready
+# Create data directories if they don't exist
 
-ADMIN_USER="gallo"echo "⏳ Waiting for services to start..."
+echo -e "${YELLOW}📁 Creating data directories...${NC}"SERVER_IP="192.168.0.90"# Wait for services to be ready
+
+mkdir -p ./backend/data
+
+mkdir -p ./backend/uploadsADMIN_USER="gallo"echo "⏳ Waiting for services to start..."
+
+mkdir -p ./backend/SNES
+
+mkdir -p ./backend/GBAsleep 10
+
+echo ""
+
+echo -e "${BLUE}========================================${NC}"
+
+# Stop existing containers
+
+echo -e "${YELLOW}⏹️  Stopping existing containers...${NC}"echo -e "${BLUE}Homepage Deployment Script${NC}"# Check if services are running
+
+docker-compose down 2>/dev/null || true
+
+echo ""echo -e "${BLUE}Domain: ${DOMAIN}${NC}"echo "✅ Checking service status..."
+
+
+
+# Build and start containersecho -e "${BLUE}Server IP: ${SERVER_IP}${NC}"docker-compose ps
+
+echo -e "${YELLOW}🔨 Building and starting containers...${NC}"
+
+docker-compose up -d --buildecho -e "${BLUE}========================================${NC}"
+
+
+
+# Wait for services to be ready# Test backend health
+
+echo ""
+
+echo -e "${YELLOW}⏳ Waiting for services to start...${NC}"# Check if running as rootecho "🩺 Testing backend health..."
 
 sleep 10
 
-echo -e "${BLUE}========================================${NC}"
-
-echo -e "${BLUE}Homepage Deployment Script${NC}"# Check if services are running
-
-echo -e "${BLUE}Domain: ${DOMAIN}${NC}"echo "✅ Checking service status..."
-
-echo -e "${BLUE}Server IP: ${SERVER_IP}${NC}"docker-compose ps
-
-echo -e "${BLUE}========================================${NC}"
-
-# Test backend health
-
-# Check if running as rootecho "🩺 Testing backend health..."
-
 if [[ $EUID -ne 0 ]]; thencurl -f http://192.168.0.90/health || echo "⚠️  Backend health check failed"
 
-   echo -e "${RED}This script must be run as root${NC}" 
+# Check if services are running
 
-   echo "Please run: sudo ./deploy.sh"# Test frontend
+echo ""   echo -e "${RED}This script must be run as root${NC}" 
 
-   exit 1echo "🌐 Testing frontend..."
+echo -e "${YELLOW}✅ Checking service status...${NC}"
 
-ficurl -f http://localhost:3000 || echo "⚠️  Frontend health check failed"
+docker-compose ps   echo "Please run: sudo ./deploy.sh"# Test frontend
 
 
 
-echo -e "${YELLOW}[1/11] Installing system dependencies...${NC}"echo "🎉 Deployment complete!"
+# Test backend health   exit 1echo "🌐 Testing frontend..."
+
+echo ""
+
+echo -e "${YELLOW}🩺 Testing backend health...${NC}"ficurl -f http://localhost:3000 || echo "⚠️  Frontend health check failed"
+
+if curl -f http://localhost:8000/health &> /dev/null; then
+
+    echo -e "${GREEN}✓ Backend is healthy${NC}"
+
+else
+
+    echo -e "${YELLOW}⚠️  Backend health check failed (might need more time to start)${NC}"echo -e "${YELLOW}[1/11] Installing system dependencies...${NC}"echo "🎉 Deployment complete!"
+
+fi
 
 apt-get updateecho "📍 Frontend: http://localhost:3000"
 
-apt-get install -y \echo "📍 Backend: http://192.168.0.90"
+# Test frontend
 
-    git \echo "📍 API Docs: http://192.168.0.90/docs"
-    docker.io \
-    docker-compose \
-    nginx \
-    certbot \
+echo ""apt-get install -y \echo "📍 Backend: http://192.168.0.90"
+
+echo -e "${YELLOW}🌐 Testing frontend...${NC}"
+
+if curl -f http://localhost:3000 &> /dev/null; then    git \echo "📍 API Docs: http://192.168.0.90/docs"
+
+    echo -e "${GREEN}✓ Frontend is accessible${NC}"    docker.io \
+
+else    docker-compose \
+
+    echo -e "${YELLOW}⚠️  Frontend health check failed (might need more time to start)${NC}"    nginx \
+
+fi    certbot \
+
     python3-certbot-nginx \
-    curl \
-    wget \
-    ufw \
-    sqlite3
 
-# Enable and start Docker
-systemctl enable docker
-systemctl start docker
+echo ""    curl \
 
-# Add current user to docker group
-if [ -n "$SUDO_USER" ]; then
-    usermod -aG docker $SUDO_USER
-fi
+echo -e "${GREEN}════════════════════════════════════${NC}"    wget \
 
-echo -e "${YELLOW}[2/11] Setting up firewall...${NC}"
-ufw --force enable
-ufw allow 80/tcp
-ufw allow 443/tcp
-ufw allow 22/tcp
-ufw allow 8000/tcp  # Backend (optional, for debugging)
-ufw reload
+echo -e "${GREEN}🎉 Deployment complete!${NC}"    ufw \
 
-echo -e "${YELLOW}[3/11] Creating deployment directory...${NC}"
-mkdir -p ${DEPLOY_DIR}
-cd ${DEPLOY_DIR}
+echo -e "${GREEN}════════════════════════════════════${NC}"    sqlite3
+
+echo ""
+
+echo -e "${CYAN}📍 Access your site:${NC}"# Enable and start Docker
+
+echo "   Frontend: http://localhost:3000"systemctl enable docker
+
+echo "   Backend:  http://localhost:8000"systemctl start docker
+
+echo "   API Docs: http://localhost:8000/docs"
+
+echo ""# Add current user to docker group
+
+echo -e "${CYAN}📍 From other devices on network:${NC}"if [ -n "$SUDO_USER" ]; then
+
+echo "   Frontend: http://192.168.0.90:3000"    usermod -aG docker $SUDO_USER
+
+echo "   Backend:  http://192.168.0.90:8000"fi
+
+echo "   Arcade:   http://192.168.0.90:3000/arcade.html (members only)"
+
+echo ""echo -e "${YELLOW}[2/11] Setting up firewall...${NC}"
+
+echo -e "${CYAN}🎮 ROM files:${NC}"ufw --force enable
+
+echo "   NES: ./backend/SNES/ ($(find ./backend/SNES -name '*.nes' 2>/dev/null | wc -l) games)"ufw allow 80/tcp
+
+echo "   GBA: ./backend/GBA/ ($(find ./backend/GBA -name '*.gba' 2>/dev/null | wc -l) games)"ufw allow 443/tcp
+
+echo ""ufw allow 22/tcp
+
+echo -e "${CYAN}🔍 Useful commands:${NC}"ufw allow 8000/tcp  # Backend (optional, for debugging)
+
+echo "   View logs:      docker-compose logs -f"ufw reload
+
+echo "   View backend:   docker logs homepage_backend -f"
+
+echo "   View frontend:  docker logs homepage_frontend -f"echo -e "${YELLOW}[3/11] Creating deployment directory...${NC}"
+
+echo "   Stop services:  docker-compose down"mkdir -p ${DEPLOY_DIR}
+
+echo "   Restart:        docker-compose restart"cd ${DEPLOY_DIR}
+
+echo ""
 
 echo -e "${YELLOW}[4/11] Cloning/updating repository...${NC}"
 if [ -d "${DEPLOY_DIR}/.git" ]; then
