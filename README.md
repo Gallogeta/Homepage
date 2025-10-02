@@ -1,4 +1,4 @@
-# 🎮 Personal Homepage & Retro Arcade
+Screenshot placeholder - Desktop View# 🎮 Personal Homepage & Retro Arcade
 
 A modern full-stack web application featuring a personal website with an integrated retro gaming arcade. Built with FastAPI, React, and EmulatorJS.
 
@@ -50,7 +50,7 @@ A modern full-stack web application featuring a personal website with an integra
 > Add screenshots of your homepage and arcade here!
 
 ```
-[Screenshot_20251002_182938.png]
+[[Screenshot_20251002_182938.png](https://github.com/Gallogeta/Homepage/blob/main/Screenshot_20251002_182938.png)]
 [Screenshot placeholder - Mobile View]
 [Screenshot placeholder - Arcade View]
 ```
