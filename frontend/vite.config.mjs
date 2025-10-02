@@ -8,9 +8,9 @@ export default defineConfig({
     port: 3000,
     host: '0.0.0.0', // Allow access from LAN
     proxy: {
-      // LOCAL DEV: Points to local backend
-      // PRODUCTION: Change to VM IP (e.g., 'http://192.168.0.90')
-      '/api': 'http://localhost:8000'
+      // PRODUCTION: VM backend
+      // LOCAL DEV: Change back to 'http://localhost:8000'
+      '/api': 'http://192.168.0.90:8000'
     }
   },
 });
