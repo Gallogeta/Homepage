@@ -11,6 +11,7 @@
     "react": "^18.2.0",
     "react-beautiful-dnd": "^13.1.1",
     "react-dom": "^18.2.0",
+    "react-router-dom": "^6.20.0",
     "react-grid-layout": "^1.4.4",
     "react-resizable": "^3.0.5",
     "jsnes": "^1.2.1",
