@@ -6,6 +6,16 @@
   <title>Arcade - Play NES/SNES Games</title>
   <link rel="stylesheet" href="arcade-modern.css" />
   <link rel="stylesheet" href="button-styles.css" />
+  <script>
+    // Authentication check - redirect to homepage if not logged in
+    (function() {
+      const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+      if (!token) {
+        alert('Please login first to access the Arcade!');
+        window.location.href = '/';
+      }
+    })();
+  </script>
   <style>
   body { background: #000; color: #ffd700; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; }
     .arcade-menu { position: fixed; right: 0; top: 0; width: 320px; height: 100vh; background: #181818ee; border-left: 2px solid #ffd700; display: flex; flex-direction: column; align-items: center; padding-top: 2rem; z-index: 10; }
