@@ -44,7 +44,7 @@ export default function ContactForm({ initialSubject = "", initialMessage = "", 
     }
     setLoading(true);
     try {
-  const res = await fetch(`${apiBase}/contact`, {
+  const res = await fetch(`${apiBase}/contact`, { // Fixed: removed double /api/ path
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...form, plan })
