@@ -27,8 +27,7 @@
 
 A modern full-stack web application featuring a personal website with an integrated retro gaming arcade. Built with FastAPI, React, and EmulatorJS.
 
-[![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-[![React](https://img.shields.io/badge/React-61DAFB?## 🏗️ Architecture
+FastAPI React 🏗️ Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────┐
