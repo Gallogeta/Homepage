@@ -985,6 +985,13 @@ function DesktopApp() {
     if (u) setUser(u);
   }, []);
 
+  // Redirect to arcade.html if arcade page is active (prevents React render errors)
+  useEffect(() => {
+    if (active === "arcade") {
+      window.location.replace('/arcade.html');
+    }
+  }, [active]);
+
   function handleAuth(data) {
     if (data.access_token) {
       localStorage.setItem("token", data.access_token);
