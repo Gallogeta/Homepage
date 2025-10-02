@@ -30,7 +30,7 @@ import asyncio
 import time
 
 load_dotenv()
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./db.sqlite3")
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./data/db.sqlite3")
 SECRET_KEY = os.getenv("SECRET_KEY", "your_secret_key")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 1440
@@ -42,6 +42,7 @@ ALLOWED_CHECK_HOSTS = set(
     if h.strip()
 )
 
+print(f"Using DATABASE_URL: {DATABASE_URL}")
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
@@ -271,8 +272,12 @@ def _rate_check(bucket: str, key: str, limit: int, window_sec: int) -> tuple[boo
         q.append(now)
         return True, 0
 
+# Use local path for logging in development, Docker path in production
+import os
+log_path = "/app/data/error.log" if os.path.exists("/app/data") else "data/error.log"
+os.makedirs(os.path.dirname(log_path), exist_ok=True)
 logging.basicConfig(
-    filename="/app/data/error.log",
+    filename=log_path,
     level=logging.ERROR,
     format="%(asctime)s %(levelname)s %(message)s",
 )
@@ -567,8 +572,32 @@ def admin_required(username: str = Depends(get_current_user)) -> str:
         raise HTTPException(status_code=403, detail="Admin access required")
     return username
 
+# Alternative auth that accepts token from query parameter (for EmulatorJS)
+def get_user_from_token_query(token: str = None, request: Request = None) -> str:
+    """Get user from token in Authorization header OR query parameter"""
+    # Try to get token from Authorization header first
+    auth_header = request.headers.get("Authorization") if request else None
+    if auth_header and auth_header.startswith("Bearer "):
+        token = auth_header.split("Bearer ")[1]
+    
+    # If no token from header, check query parameter
+    if not token and request:
+        token = request.query_params.get("token")
+    
+    if not token:
+        raise HTTPException(status_code=401, detail="No authentication token provided")
+    
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username = payload.get("sub")
+        if not username:
+            raise HTTPException(status_code=401, detail="Invalid token payload")
+        return username
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
 # List available ROM files under backend/SNES (requires authentication)
-@app.get("/snes")
+@app.get("/api/snes")
 def list_snes_roms(username: str = Depends(get_current_user)):
     base_dir = os.path.dirname(os.path.abspath(__file__))
     rom_dir = os.path.join(base_dir, "SNES")
@@ -587,13 +616,58 @@ def list_snes_roms(username: str = Depends(get_current_user)):
     files.sort(key=lambda x: x["name"].lower())
     return files
 
-# Serve SNES ROMs from backend/SNES/ (requires authentication)
-@app.get("/snes/{filename}")
-def get_snes_rom(filename: str, username: str = Depends(get_current_user)):
+# Serve SNES ROMs from backend/SNES/ (requires authentication via header or query param)
+# Supports both GET and HEAD methods for EmulatorJS compatibility
+@app.api_route("/api/snes/{filename}", methods=["GET", "HEAD"])
+def get_snes_rom(filename: str, request: Request, token: str = None):
+    # Authenticate using token from header or query parameter
+    try:
+        username = get_user_from_token_query(token=token, request=request)
+    except HTTPException as e:
+        return JSONResponse(status_code=e.status_code, content={"detail": e.detail})
+    
     base_dir = os.path.dirname(os.path.abspath(__file__))
     rom_path = os.path.join(base_dir, "SNES", filename)
     if not os.path.exists(rom_path):
         return JSONResponse(status_code=404, content={"detail": "ROM not found"})
+    
+    return FileResponse(rom_path, media_type="application/octet-stream", filename=filename)
+
+# List available GBA ROM files (requires authentication)
+@app.get("/api/gba")
+def list_gba_roms(username: str = Depends(get_current_user)):
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    rom_dir = os.path.join(base_dir, "GBA")
+    if not os.path.isdir(rom_dir):
+        return []
+    files = []
+    for name in os.listdir(rom_dir):
+        path = os.path.join(rom_dir, name)
+        if os.path.isfile(path) and name.lower().endswith(".gba"):
+            try:
+                size = os.path.getsize(path)
+            except OSError:
+                size = None
+            files.append({"name": os.path.splitext(name)[0], "file": name, "size": size})
+    # sort by name for stable ordering
+    files.sort(key=lambda x: x["name"].lower())
+    return files
+
+# Serve GBA ROMs (requires authentication via header or query param)
+# Supports both GET and HEAD methods for EmulatorJS compatibility
+@app.api_route("/api/gba/{filename}", methods=["GET", "HEAD"])
+def get_gba_rom(filename: str, request: Request, token: str = None):
+    # Authenticate using token from header or query parameter
+    try:
+        username = get_user_from_token_query(token=token, request=request)
+    except HTTPException as e:
+        return JSONResponse(status_code=e.status_code, content={"detail": e.detail})
+    
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    rom_path = os.path.join(base_dir, "GBA", filename)
+    if not os.path.exists(rom_path):
+        return JSONResponse(status_code=404, content={"detail": "ROM not found"})
+    
     return FileResponse(rom_path, media_type="application/octet-stream", filename=filename)
 
 # System metrics and checks for sysadmin dashboard

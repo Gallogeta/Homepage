@@ -1097,21 +1097,31 @@ function DesktopApp() {
           {leftMenuItems.map(item => (
             item.href ? (
               <React.Fragment key={item.key}>
-                <button
-                  className={
-                    "menu-btn" + 
-                    (item.key === "arcade" ? " " : "") +
-                    (item.key === "arcade" ? "arcade-btn" : "")
-                  }
-                  style={item.key === "arcade" ? {
-                    border: '2px solid #00ff00',
-                    color: '#00ff00',
-                    fontWeight: 600
-                  } : {}}
-                  onClick={() => window.open(item.href, '_blank', 'noopener,noreferrer')}
-                >
-                  {item.label}
-                </button>
+                {/* Only show arcade button if user is logged in */}
+                {(item.key !== "arcade" || user) && (
+                  <button
+                    className={
+                      "menu-btn" + 
+                      (item.key === "arcade" ? " " : "") +
+                      (item.key === "arcade" ? "arcade-btn" : "")
+                    }
+                    style={item.key === "arcade" ? {
+                      border: '2px solid #00ff00',
+                      color: '#00ff00',
+                      fontWeight: 600
+                    } : {}}
+                    onClick={() => {
+                      if (item.key === "arcade") {
+                        // Navigate in same tab for arcade
+                        window.location.href = item.href;
+                      } else {
+                        window.open(item.href, '_blank', 'noopener,noreferrer');
+                      }
+                    }}
+                  >
+                    {item.label}
+                  </button>
+                )}
                 {item.key === "arcade" && user && (
                   <button
                     className="menu-btn"

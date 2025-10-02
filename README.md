@@ -1,34 +1,210 @@
-# Homepage - Full-Stack Web Application# Project setup
+# 🎮 Personal Homepage & Retro Arcade
+
+A modern full-stack web application featuring a personal website with an integrated retro gaming arcade. Built with FastAPI, React, and EmulatorJS.
+
+[![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![React](https://img.shields.io/badge/React-61DAFB?## 🏗️ Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    Nginx Reverse Proxy                  │
+│                   (Port 80/443 - SSL)                   │
+└────────────────────┬────────────────────────────────────┘
+                     │
+        ┌────────────┴────────────┐
+        │                         │
+        ▼                         ▼
+┌──────────────┐          ┌──────────────┐
+│   Frontend   │          │   Backend    │
+│  React+Vite  │◄────────►│   FastAPI    │
+│  Port 3000   │   API    │  Port 8000   │
+└──────────────┘  Calls   └──────┬───────┘
+        │                        │
+        │                        ▼
+        │                ┌──────────────┐
+        │                │   SQLite DB  │
+        │                │  users/pages │
+        │                └──────────────┘
+        │
+        ▼
+┌──────────────────┐      ┌──────────────┐
+│  EmulatorJS      │      │   ROM Files  │
+│  Retro Gaming    │◄─────│  NES/GBA/etc │
+└──────────────────┘      └──────────────┘
+```
+
+---
+
+## 🙏 Acknowledgments
+
+- [FastAPI](https://fastapi.tiangolo.com/) - Modern Python web framework
+- [React](https://reactjs.org/) - Frontend library
+- [EmulatorJS](https://github.com/EmulatorJS/EmulatorJS) - Retro game emulation
+- [Vite](https://vitejs.dev/) - Fast frontend build tool
+- [Docker](https://www.docker.com/) - Containerization platform
+
+---
+
+## 📸 Screenshots
+
+> Add screenshots of your homepage and arcade here!
+
+```
+[Screenshot placeholder - Desktop View]
+[Screenshot placeholder - Mobile View]
+[Screenshot placeholder - Arcade View]
+```
+
+---
+
+**Built with ❤️ by retro gaming enthusiasts**
+
+*Disclaimer: This project is for educational purposes. Ensure you own or have the right to use any ROM files.*logo=react&logoColor=black)](https://reactjs.org/)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white)](https://www.docker.com/)
+[![Python](https://img.shields.io/badge/Python-3.9+-3776AB?style=flat&logo=python&logoColor=white)](https://www.python.org/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+---
+
+## 🎯 What is this?
+
+This is a **full-stack personal homepage** with a unique twist: an integrated **retro gaming arcade**! Users can register, browse your personal content, and play classic video games right in their browser. Perfect for showcasing your web development skills while sharing your love for retro gaming.
+
+**Tech Stack:** FastAPI (Python) + React (Vite) + SQLite + EmulatorJS + Docker + Nginx
+
+## ✨ Features
+
+### 🌐 Personal Website
+- **Dynamic Content Management** - Edit pages through admin panel
+- **User Authentication** - Secure JWT-based auth with role-based access
+- **User Management** - Admin dashboard for managing users and permissions
+- **System Monitoring** - Real-time visitor tracking and system metrics
+- **Responsive Design** - Mobile-first, works on all devices
+
+### 🎮 Retro Gaming Arcade
+- **Multi-Platform Emulation** - Play NES, SNES, GBA, GB, N64, and more
+- **Members-Only Access** - Authentication required to play games
+- **Mobile Optimized** - Touch controls, landscape mode support, fullscreen
+- **Auto-Save States** - EmulatorJS handles save states automatically
+- **Game Library** - Currently featuring 24 NES games and 10 GBA games
+
+### 🔒 Security & Features
 
 
 
-A modern, production-ready web application with FastAPI backend, React frontend, and Nginx reverse proxy.Create a virtual environment and install backend deps:
+- **3-Tier Role System** - Admin, Moderator, and User roles
+- **Optional CAPTCHA** - Cloudflare Turnstile or hCaptcha support
+- **Email Integration** - User registration with email verification
+- **SQLite Database** - Lightweight and portable
+- **Docker Ready** - Full containerization with docker-compose
+- **Nginx Reverse Proxy** - Production-ready with SSL support
 
+---
 
+## 🚀 Quick Start
 
-## 🚀 Features- cd backend
+### Prerequisites
+- Docker & Docker Compose (recommended)
+- OR: Python 3.9+, Node.js 16+, and SQLite
 
-- python3 -m venv venv
+### Using Docker (Recommended)
 
-- ⚡ **FastAPI Backend** - High-performance Python API- source venv/bin/activate
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/Homepage.git
+cd Homepage
 
-- ⚛️ **React Frontend** - Modern SPA with Vite- pip install -r requirements.txt
+# Start all services
+docker-compose up -d
 
-- 🔒 **User Authentication** - JWT-based auth with 3-tier roles (Admin, Moderator, User)- uvicorn main:app --host 0.0.0.0 --port 8000
+# Access at http://localhost
+```
 
-- 👥 **User Management** - Complete admin panel
+### Local Development
 
-- 📄 **Dynamic Pages** - Editable contentFrontend:
+**Backend:**
+```bash
+cd backend
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
 
-- 📊 **System Monitoring** - Real-time metrics and visitor tracking
+**Frontend:**
+```bash
+cd frontend
+npm install
+npm run dev
+# Access at http://localhost:3000
+```
 
-- 🐳 **Docker Deployment** - Fully containerized- cd frontend
+---
 
-- 🌐 **Production Ready** - Nginx reverse proxy with SSL support- npm install
+## 📁 Project Structure
 
-- npm run dev
+```
+Homepage/
+├── backend/              # FastAPI backend
+│   ├── main.py          # API routes and application
+│   ├── data/            # SQLite database
+│   ├── SNES/            # NES/SNES ROM storage
+│   └── GBA/             # GBA ROM storage
+├── frontend/            # React frontend
+│   ├── src/             # React components
+│   └── public/          # Static assets & arcade
+│       ├── arcade.html  # Retro arcade page
+│       └── emulatorjs/  # EmulatorJS library
+├── nginx/               # Reverse proxy config
+├── docker-compose.yml   # Docker orchestration
+└── start-local-dev.sh   # Local dev helper script
+```
 
-## 🏁 Quick Start
+---
+
+## ⚙️ Configuration
+
+### Backend Environment Variables
+
+Create `backend/.env`:
+
+```bash
+# Security
+SECRET_KEY=your-super-secret-key-change-this
+DATABASE_URL=sqlite:///./data/db.sqlite3
+
+# CORS
+ALLOW_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+
+# Optional: CAPTCHA (for registration)
+TURNSTILE_SECRET=your-cloudflare-turnstile-secret
+HCAPTCHA_SECRET=your-hcaptcha-secret
+
+# Optional: Email
+MAIL_DEV=1                    # Set to 0 for real email
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_USER=your-email
+SMTP_PASS=your-password
+MAIL_FROM=noreply@example.com
+```
+
+### Frontend Environment Variables
+
+Create `frontend/.env` (optional):
+
+```bash
+VITE_API_BASE=http://localhost:8000
+VITE_TURNSTILE_SITEKEY=your-cloudflare-sitekey
+VITE_HCAPTCHA_SITEKEY=your-hcaptcha-sitekey
+```
+
+---
+
+## 👥 User Roles & Permissions
+
+| Role | Permissions |
+|------|-------------|
 
 ## Environment variables (.env)
 
@@ -98,52 +274,77 @@ sudo ./deploy.sh- POST /token (OAuth2PasswordRequestForm)
 
 | Role | Permissions |
 |------|-------------|
-| **Admin** | Full access: manage users, change roles, edit pages, view metrics |
-| **Moderator** | Limited: can only delete and ban users |
-| **User** | Standard access |
+| **Admin** | Full access: manage users, roles, pages, arcade, view metrics |
+| **Moderator** | Manage users: delete and ban users |
+| **User** | Access arcade and personal pages |
 
-## 📁 Project Structure
+---
 
-```
-Homepage/
-├── backend/          # FastAPI app
-├── frontend/         # React app  
-├── nginx/           # Reverse proxy config
-├── docker-compose.yml
-└── deploy.sh        # Production deployment
-```
+## 🎮 Arcade Features
 
-## 🔧 Development
+The integrated arcade uses [EmulatorJS](https://github.com/EmulatorJS/EmulatorJS) and supports:
+
+- **NES/SNES** - Nintendo Entertainment System games
+- **Game Boy / GBA** - Portable Nintendo games
+- **N64** - Nintendo 64 games
+- **PlayStation** - PS1 games
+- **Sega Genesis** - 16-bit Sega games
+- **And more!** - Atari, NDS, arcade systems
+
+### Adding Games
+
+1. Place ROM files in `backend/SNES/` (for NES/SNES) or `backend/GBA/` (for GBA)
+2. Update game lists in `frontend/public/arcade-menu.js`
+3. Games are automatically served with authentication
+
+### Mobile Support
+
+- Responsive dropdown menu for game selection
+- Landscape mode optimization
+- Fullscreen support with double-tap to exit
+- Touch-friendly controls
+
+---
+
+## � API Documentation
+
+Interactive API docs available at: `http://localhost:8000/docs`
+
+### Key Endpoints
+
+**Authentication:**
+- `POST /token` - Login (returns JWT)
+- `POST /register` - Create new account
+- `GET /me` - Get current user info
+
+**Pages:**
+- `GET /api/pages/{name}` - Get page content
+- `POST /api/pages/{name}` - Update page (admin only)
+
+**Arcade:**
+- `GET /api/snes` - List NES/SNES games
+- `GET /api/snes/{filename}` - Download ROM (authenticated)
+- `GET /api/gba` - List GBA games
+- `GET /api/gba/{filename}` - Download ROM (authenticated)
+
+**Admin:**
+- `GET /api/users` - List all users
+- `PATCH /api/users/{user_id}` - Update user role
+- `DELETE /api/users/{user_id}` - Delete user
+
+---
+
+## 🛠️ Development Commands
 
 ```bash
-# Backend
-cd backend && pip install -r requirements.txt && uvicorn main:app --reload
+# Start local development (both backend and frontend)
+./start-local-dev.sh
 
-# Frontend
-cd frontend && npm install && npm run dev
-
-# View logs
-docker-compose logs -f
-```
-
-## 📝 Environment Variables
-
-Create `backend/.env`:
-```bash
-DATABASE_URL=sqlite:///./data/db.sqlite3
-JWT_SECRET_KEY=your-secret-key
-ADMIN_USER=gallo
-ALLOWED_ORIGINS=*
-```
-
-## 🛠️ Useful Commands
-
-```bash
-# Restart services
-docker-compose restart
-
-# Rebuild after changes
-docker-compose build --no-cache && docker-compose up -d
+# Docker commands
+docker-compose up -d          # Start all services
+docker-compose logs -f        # View logs
+docker-compose restart        # Restart services
+docker-compose down           # Stop all services
 
 # Database backup
 docker-compose exec backend sqlite3 /app/data/db.sqlite3 .dump > backup.sql
@@ -152,26 +353,106 @@ docker-compose exec backend sqlite3 /app/data/db.sqlite3 .dump > backup.sql
 docker-compose exec backend sqlite3 /app/data/db.sqlite3
 ```
 
-## 📚 API Documentation
+---
 
-Once running, visit: `http://localhost/api/docs`
+## 🌍 Production Deployment
 
-## 🔒 Security
+1. **Clone on your server:**
+   ```bash
+   git clone https://github.com/yourusername/Homepage.git
+   cd Homepage
+   ```
 
-- Change `JWT_SECRET_KEY` in production
-- Use HTTPS (Let's Encrypt)
-- Regular backups
-- Update Docker images
+2. **Configure environment:**
+   - Update `backend/.env` with production secrets
+   - Update `frontend/vite.config.mjs` proxy settings
 
-## 📄 License
+3. **Deploy with Docker:**
+   ```bash
+   docker-compose build
+   docker-compose up -d
+   ```
 
-MIT License
-
-## 💬 Support
-
-Issues: GitHub Issues
-Contact: admin@itsusi.eu
+4. **Setup SSL (optional but recommended):**
+   ```bash
+   sudo certbot --nginx -d yourdomain.com
+   ```
 
 ---
 
-Built with ❤️ for itsusi.eu
+## 📱 LAN/Mobile Testing
+
+```bash
+# Find your local IP
+ip addr show | grep "inet " | grep -v 127.0.0.1
+
+# Access from mobile device on same network
+http://YOUR_LOCAL_IP:3000
+```
+
+Make sure firewall allows ports 3000 (frontend) and 8000 (backend).
+
+---
+
+## ❓ FAQ
+
+**Q: Can I add more game systems?**  
+A: Yes! EmulatorJS supports many systems. Create directories like `backend/N64/`, add endpoints in `main.py`, and update the frontend.
+
+**Q: Do I need to provide my own ROM files?**  
+A: Yes. This project doesn't include ROM files. You must own or have rights to any games you add.
+
+**Q: How do I change the default admin user?**  
+A: The first registered user becomes admin, or you can manually update the database role field.
+
+**Q: Can this run on shared hosting?**  
+A: This requires a VPS or dedicated server with Docker support. Shared hosting typically won't work.
+
+**Q: Is this mobile-friendly?**  
+A: Absolutely! The arcade includes touch controls, landscape mode hints, and fullscreen support.
+
+**Q: How do I add more pages to the site?**  
+A: Use the admin panel to create/edit pages dynamically, or add static HTML files to `frontend/public/`.
+
+---
+
+## 🔒 Security Best Practices
+
+- ✅ Change `SECRET_KEY` in production
+- ✅ Use HTTPS with valid SSL certificates
+- ✅ Enable CAPTCHA for registration
+- ✅ Regular database backups
+- ✅ Keep Docker images updated
+- ✅ Use strong passwords for admin accounts
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+---
+
+## � Acknowledgments
+
+- [FastAPI](https://fastapi.tiangolo.com/) - Modern Python web framework
+- [React](https://reactjs.org/) - Frontend library
+- [EmulatorJS](https://github.com/EmulatorJS/EmulatorJS) - Retro game emulation
+- [Vite](https://vitejs.dev/) - Fast frontend build tool
+- [Docker](https://www.docker.com/) - Containerization platform
+
+---
+
+**Built with ❤️ by retro gaming enthusiasts**

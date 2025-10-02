@@ -345,14 +345,17 @@ export default function MobileApp() {
               
               <div className="mobile-menu-section">
                 <h4>Pages</h4>
-                {mobileSidebarItems.map(item => (
-                  item.external ? (
+                {mobileSidebarItems.map(item => {
+                  // Hide arcade if not logged in
+                  if (item.key === "arcade" && !user) {
+                    return null;
+                  }
+                  
+                  return item.external ? (
                     <a
                       key={item.key}
                       className="mobile-menu-item"
                       href={item.external}
-                      target="_blank"
-                      rel="noopener noreferrer"
                       onClick={() => setSidebarOpen(false)}
                     >
                       {item.label}
@@ -365,8 +368,8 @@ export default function MobileApp() {
                     >
                       {item.label}
                     </button>
-                  )
-                ))}
+                  );
+                })}
               </div>
               
               {user && (
@@ -416,16 +419,23 @@ export default function MobileApp() {
 
       {/* Mobile Bottom Navigation */}
       <nav className="mobile-bottom-nav">
-        {mobileNavItems.map(item => (
-          <button
-            key={item.key}
-            className={`mobile-nav-btn ${active === item.key ? 'active' : ''}`}
-            onClick={() => handleNavigation(item.key)}
-          >
-            <div className="mobile-nav-icon">{item.icon}</div>
-            <div>{item.label}</div>
-          </button>
-        ))}
+        {mobileNavItems.map(item => {
+          // Hide arcade button if not logged in
+          if (item.key === "arcade" && !user) {
+            return null;
+          }
+          
+          return (
+            <button
+              key={item.key}
+              className={`mobile-nav-btn ${active === item.key ? 'active' : ''}`}
+              onClick={() => handleNavigation(item.key)}
+            >
+              <div className="mobile-nav-icon">{item.icon}</div>
+              <div>{item.label}</div>
+            </button>
+          );
+        })}
       </nav>
 
       {/* Mobile WhatsApp Widget */}

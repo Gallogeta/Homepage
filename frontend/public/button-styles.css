@@ -98,6 +98,8 @@
   padding: 0.25rem 0.5rem;
   min-height: 28px;
   line-height: 1.2;
+  width: 100%;
+  text-align: left;
 }
 
 /* Mobile fullscreen button */

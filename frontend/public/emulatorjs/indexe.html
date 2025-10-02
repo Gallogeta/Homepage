@@ -161,7 +161,10 @@
                 } else {
                     url = `roms/${file}`;
                 }
-                const parts = upload ? input.files[0].name.split(".") : file.split(".");
+                
+                // Extract filename without query parameters (e.g., remove ?token=...)
+                const cleanFile = upload ? input.files[0].name : file.split('?')[0];
+                const parts = cleanFile.split(".");
 
                 const core = await (async (ext) => {
                     if (["fds", "nes", "unif", "unf"].includes(ext))
