@@ -47,61 +47,45 @@ The user can now log in immediately.
 
 ---
 
-### 2. `backup-database.sh` - Backup Database
+### 2. `backup-db.sh` - Backup Database & Media
 
-Creates a timestamped backup of the SQLite database with automatic cleanup of old backups.
+Creates a timestamped backup of the SQLite database and media files.
 
 **Usage:**
 ```bash
 # Create a backup
-./backup-database.sh
+./backup-db.sh
 ```
 
 **What it does:**
 - Creates consistent SQLite backup using `.backup` command
-- Saves to `/mnt/data/Homepage/backups/` with timestamp
-- Shows database statistics (users, pages, audit logs)
-- Automatically deletes backups older than 30 days
-- Lists recent backups
+- Backs up database from Docker volume
+- Backs up media/uploads directory if it exists
+- Saves to `/home/gallo/Code/Homepage/backups/` with timestamp
 
 **Backup Location:**
 ```
-/mnt/data/Homepage/backups/homepage_db_backup_YYYYMMDD_HHMMSS.sqlite3
+/home/gallo/Code/Homepage/backups/backup_YYYYMMDD_HHMMSS.db
+/home/gallo/Code/Homepage/backups/uploads_YYYYMMDD_HHMMSS/
 ```
 
 **Example:**
 ```bash
-$ ./backup-database.sh
-💾 Database Backup Tool
-======================
+$ ./backup-db.sh
+═══════════════════════════════════════════
+   ___   _   _    _    ___   ___  ___ _____ _   
+  / __| /_\ | |  | |  / _ \ / _ \| __|_   _/_\  
+ | (_ |/ _ \| |__| |_| (_) | (_) | _|  | |/ _ \ 
+  \___/_/ \_\____|____\___/ \___/|___| |_/_/ \_\
 
-📊 Database Information:
-  Source: /var/lib/docker/volumes/homepage_db_data/_data/db.sqlite3
-  Destination: /mnt/data/Homepage/backups/homepage_db_backup_20251003_162000.sqlite3
-  Timestamp: 20251003_162000
-  Database size: 64K
+         Made by GALLOGETA
+═══════════════════════════════════════════
 
-🔄 Creating backup...
-📦 Copying backup to host...
-✅ Backup created successfully!
-  File: homepage_db_backup_20251003_162000.sqlite3
-  Size: 64K
-  Location: /mnt/data/Homepage/backups
-
-📈 Database Statistics:
-Users: 2
-Pages: 8
-Audit Logs: 145
-
-🗑️  Cleaning up old backups (older than 30 days)...
-  Backups remaining: 5
-
-📁 Recent backups:
-  homepage_db_backup_20251003_162000.sqlite3 (64K, Oct 3 16:20)
-  homepage_db_backup_20251003_140000.sqlite3 (64K, Oct 3 14:00)
-  homepage_db_backup_20251002_220000.sqlite3 (63K, Oct 2 22:00)
-
-✅ Backup complete!
+� Creating database backup...
+� Backing up media files...
+✅ Backup completed!
+   Database: /home/gallo/Code/Homepage/backups/backup_20251003_162000.db
+   Media: /home/gallo/Code/Homepage/backups/uploads_20251003_162000/
 ```
 
 ---
@@ -116,19 +100,24 @@ cd /mnt/data/Homepage
 docker-compose down
 
 # 2. List available backups
-ls -lh /mnt/data/Homepage/backups/
+ls -lh /home/gallo/Code/Homepage/backups/
 
 # 3. Copy the backup file (replace with your backup filename)
-sudo cp /mnt/data/Homepage/backups/homepage_db_backup_YYYYMMDD_HHMMSS.sqlite3 \
+sudo cp /home/gallo/Code/Homepage/backups/backup_YYYYMMDD_HHMMSS.db \
         /var/lib/docker/volumes/homepage_db_data/_data/db.sqlite3
 
 # 4. Fix permissions
 sudo chown gallo:gallo /var/lib/docker/volumes/homepage_db_data/_data/db.sqlite3
 
-# 5. Start containers
+# 5. Restore media files (optional)
+docker cp /home/gallo/Code/Homepage/backups/uploads_YYYYMMDD_HHMMSS/ \
+          homepage_backend:/app/uploads
+
+# 6. Start containers
+cd /mnt/data/Homepage
 docker-compose up -d
 
-# 6. Verify
+# 7. Verify
 docker logs homepage_backend --tail=20
 curl http://localhost:8000/api/pages/home
 ```
@@ -144,7 +133,7 @@ To automatically backup the database daily, add a cron job:
 crontab -e
 
 # Add this line to backup daily at 3 AM
-0 3 * * * /mnt/data/Homepage/backup-database.sh >> /var/log/homepage_backup.log 2>&1
+0 3 * * * cd /home/gallo/Code/Homepage && ./backup-db.sh >> /var/log/homepage_backup.log 2>&1
 ```
 
 ---
