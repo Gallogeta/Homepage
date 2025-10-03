@@ -10,7 +10,11 @@ export default defineConfig({
     proxy: {
       // PRODUCTION: VM backend
       // LOCAL DEV: Change back to 'http://localhost:8000'
-      '/api': 'http://192.168.0.90:8000'
+      '/api': {
+        target: 'http://192.168.0.90:8000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '')
+      }
     }
   },
 });
