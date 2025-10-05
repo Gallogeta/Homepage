@@ -223,8 +223,11 @@
     const mobileHomeBtn = document.getElementById('mobile-home-btn');
     
     function goHome() {
-      // Clear arcade state from localStorage if it exists
+      // Clear all arcade-related state from localStorage
       localStorage.removeItem('arcade-active');
+      localStorage.removeItem('activePage');
+      // Set active page to home
+      localStorage.setItem('activePage', 'home');
       // Force clean navigation to home
       window.location.href = '/';
     }
@@ -237,10 +240,13 @@
     const mobileLogoutBtn = document.getElementById('mobile-logout-btn');
     
     function logout() {
-      // Clear all authentication data
+      // Clear all authentication and state data
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       localStorage.removeItem('arcade-active');
+      localStorage.removeItem('activePage');
+      // Set active page to home
+      localStorage.setItem('activePage', 'home');
       // Navigate to home page
       window.location.href = '/';
     }
