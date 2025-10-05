@@ -965,7 +965,16 @@ function DesktopApp() {
   const [user, setUser] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     // Restore last active page from localStorage, default to 'home'
-    const [active, setActive] = useState(() => localStorage.getItem("activePage") || "home");
+    // Check for exit parameter first - if present, force home page
+    const [active, setActive] = useState(() => {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('exit') === '1') {
+        localStorage.removeItem("activePage");
+        localStorage.removeItem("arcade-active");
+        return "home";
+      }
+      return localStorage.getItem("activePage") || "home";
+    });
   const [animating, setAnimating] = useState(false);
   // Only one modalImg state should exist. If you see another, remove it.
   const [modalImg, setModalImg] = useState(null);
@@ -994,9 +1003,13 @@ function DesktopApp() {
     if (active === "arcade" && !isExiting) {
       window.location.replace('/arcade.html');
     } else if (isExiting) {
-      // Clear the exit parameter and reset to home
+      // Aggressively clear arcade state from localStorage
+      localStorage.removeItem("activePage");
+      localStorage.removeItem("arcade-active");
+      // Reset to home state
       localStorage.setItem("activePage", "home");
       setActive("home");
+      // Clean up URL parameters
       window.history.replaceState({}, '', '/');
     }
   }, [active]);
