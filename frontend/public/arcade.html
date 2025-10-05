@@ -228,8 +228,8 @@
       localStorage.removeItem('activePage');
       // Set active page to home
       localStorage.setItem('activePage', 'home');
-      // Force clean navigation to home
-      window.location.href = '/';
+      // Force clean navigation to home with exit parameter to bypass redirect
+      window.location.href = '/?exit=1';
     }
     
     if (homeBtn) homeBtn.addEventListener('click', goHome);
@@ -247,8 +247,8 @@
       localStorage.removeItem('activePage');
       // Set active page to home
       localStorage.setItem('activePage', 'home');
-      // Navigate to home page
-      window.location.href = '/';
+      // Navigate to home page with exit parameter to bypass redirect
+      window.location.href = '/?exit=1';
     }
     
     if (logoutBtn) logoutBtn.addEventListener('click', logout);

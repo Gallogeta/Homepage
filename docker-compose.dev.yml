@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: homepage_backend_dev
+    restart: unless-stopped
+    volumes:
+      - ./backend:/app
+      - db_data_dev:/app/data
+      - uploads_data_dev:/app/uploads
+    environment:
+      - DATABASE_URL=sqlite:////app/data/db.sqlite3
+      - JWT_SECRET=${JWT_SECRET}
+      - GMAIL_USER=${GMAIL_USER}
+      - GMAIL_APP_PASSWORD=${GMAIL_APP_PASSWORD}
+    ports:
+      - "8000:8000"
+    networks:
+      - homepage_network_dev
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: homepage_frontend_dev
+    restart: unless-stopped
+    volumes:
+      - ./frontend:/app
+      - frontend_build_dev:/app/dist
+    ports:
+      - "3000:3000"
+    networks:
+      - homepage_network_dev
+    depends_on:
+      - backend
+
+  nginx:
+    image: nginx:alpine
+    container_name: homepage_nginx_dev
+    restart: unless-stopped
+    ports:
+      - "8080:80"      # Changed from 80 to 8080
+      - "8443:443"     # Changed from 443 to 8443
+    volumes:
+      - ./nginx/nginx.dev.conf:/etc/nginx/nginx.conf:ro  # Use dev config
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - uploads_data_dev:/var/www/uploads:ro
+      - ./frontend/public:/var/www/html:ro
+      - frontend_build_dev:/var/www/build:ro
+    networks:
+      - homepage_network_dev
+    depends_on:
+      - backend
+      - frontend
+
+networks:
+  homepage_network_dev:
+    driver: bridge
+
+volumes:
+  uploads_data_dev:
+    driver: local
+  db_data_dev:
+    driver: local
+  frontend_build_dev:
+    driver: local

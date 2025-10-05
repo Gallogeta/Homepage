@@ -986,9 +986,18 @@ function DesktopApp() {
   }, []);
 
   // Redirect to arcade.html if arcade page is active (prevents React render errors)
+  // Skip redirect if URL contains exit=1 parameter (user is leaving arcade)
   useEffect(() => {
-    if (active === "arcade") {
+    const urlParams = new URLSearchParams(window.location.search);
+    const isExiting = urlParams.get('exit') === '1';
+    
+    if (active === "arcade" && !isExiting) {
       window.location.replace('/arcade.html');
+    } else if (isExiting) {
+      // Clear the exit parameter and reset to home
+      localStorage.setItem("activePage", "home");
+      setActive("home");
+      window.history.replaceState({}, '', '/');
     }
   }, [active]);
 
