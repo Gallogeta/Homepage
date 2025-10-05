@@ -51,8 +51,6 @@ FastAPI React 🏗️ Architecture
 ### Desktop View
 ![Desktop View - Homepage](Screenshot_20251002_182938.png)
 
-### Arcade View  
-![Arcade View - Retro Gaming](Screenshot_20251002_183940.png)
 
 ---
 
@@ -94,6 +92,7 @@ This is a **full-stack personal homepage** with a unique twist: an integrated **
 - **SQLite Database** - Lightweight and portable
 - **Docker Ready** - Full containerization with docker-compose
 - **Nginx Reverse Proxy** - Production-ready with SSL support
+- **Perma BAN** - PERMA BAN TO ANYONE WHO TRIES TO SCAN OR GET .env file.
 
 ---
 
