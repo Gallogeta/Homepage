@@ -1238,7 +1238,7 @@ function DesktopApp() {
       </Suspense>
           {/* Footer */}
           <footer className="w-full text-center text-xs text-gold bg-black border-t border-gold py-2 mt-auto opacity-80" style={{fontSize: '0.85rem', letterSpacing: '0.03em'}}>
-            &copy; Gallogeta, 2025 &mdash; All rights reserved. | <a href="mailto:info@itsusi.eu" className="underline hover:text-white">Contact</a> | <a href="/privacy" className="underline hover:text-white">Privacy Policy</a>
+            &copy; Gallogeta, 2025 &mdash; All rights reserved. | <a href="mailto:info@itsusi.eu" className="underline hover:text-white">Contact</a> | <a href="/privacy-policy.html" className="underline hover:text-white">Privacy Policy</a>
           </footer>
         </main>
 
