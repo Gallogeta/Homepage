@@ -967,6 +967,14 @@ function DesktopApp() {
     // Restore last active page from localStorage, default to 'home'
     // Check for exit parameter first - if present, force home page
     const [active, setActive] = useState(() => {
+      // One-time migration: clear arcade state for users with old cached data
+      const appVersion = localStorage.getItem("appVersion");
+      if (appVersion !== "2.0") {
+        localStorage.removeItem("activePage");
+        localStorage.removeItem("arcade-active");
+        localStorage.setItem("appVersion", "2.0");
+      }
+      
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get('exit') === '1') {
         localStorage.removeItem("activePage");
