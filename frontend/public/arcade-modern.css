@@ -62,8 +62,11 @@ body { background: #111; color: #ffd700; font-family: 'Segoe UI', Arial, sans-se
 .fullscreen-btn:hover { background: #fff700; color: #000; }
 .home-btn { margin: 0.75rem auto 0 auto; display: block; background: #ffd700; color: #111; border: none; border-radius: 8px; padding: 0.75rem 2.5rem; font-size: 1.2rem; font-weight: bold; cursor: pointer; box-shadow: 0 0 10px #ffd70055; transition: background 0.2s, color 0.2s; }
 .home-btn:hover { background: #fff700; color: #000; }
+.logout-btn { margin: 0.75rem auto 0 auto; display: block; background: #ff4444; color: #fff; border: none; border-radius: 8px; padding: 0.75rem 2.5rem; font-size: 1.2rem; font-weight: bold; cursor: pointer; box-shadow: 0 0 10px #ff444455; transition: background 0.2s, transform 0.2s; }
+.logout-btn:hover { background: #ff6666; transform: scale(1.05); }
 .mobile-fullscreen-btn { display: none; } /* Hidden on desktop */
 .mobile-home-btn { display: none; } /* Hidden on desktop */
+.mobile-logout-btn { display: none; } /* Hidden on desktop */
 
 /* Exit fullscreen button - positioned as overlay when in fullscreen */
 .exit-fullscreen-btn {
@@ -417,11 +420,39 @@ body { background: #111; color: #ffd700; font-family: 'Segoe UI', Arial, sans-se
 		box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
 	}
 	
+	/* Mobile logout button */
+	.mobile-logout-btn {
+		display: block !important;
+		margin: 12px auto;
+		padding: 10px 24px;
+		font-size: 16px;
+		font-weight: bold;
+		background: linear-gradient(135deg, #ff4444 0%, #ff6666 100%);
+		color: #fff;
+		border: 2px solid #ff4444;
+		border-radius: 8px;
+		cursor: pointer;
+		box-shadow: 0 0 15px rgba(255, 68, 68, 0.4);
+		transition: all 0.3s ease;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+	
+	.mobile-logout-btn:active {
+		transform: scale(0.95);
+		box-shadow: 0 0 20px rgba(255, 68, 68, 0.6);
+	}
+	
 	.fullscreen-icon {
 		font-size: 18px;
 	}
 	
 	.home-icon {
+		font-size: 18px;
+	}
+	
+	.logout-icon {
 		font-size: 18px;
 	}
 	

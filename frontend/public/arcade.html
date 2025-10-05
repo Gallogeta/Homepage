@@ -72,12 +72,16 @@
         title="EmulatorJS"
       ></iframe>
       <button class="fullscreen-btn" id="fullscreen-btn">Fullscreen</button>
-      <button class="home-btn" id="home-btn" onclick="window.location.replace('/')">🏠 Home</button>
+      <button class="home-btn" id="home-btn">🏠 Home</button>
+      <button class="logout-btn" id="logout-btn">🚪 Logout</button>
       <button class="mobile-fullscreen-btn" id="mobile-fullscreen-btn">
         <span class="fullscreen-icon">⛶</span> Fullscreen
       </button>
-      <button class="mobile-home-btn" id="mobile-home-btn" onclick="window.location.replace('/')">
+      <button class="mobile-home-btn" id="mobile-home-btn">
         <span class="home-icon">🏠</span> Home
+      </button>
+      <button class="mobile-logout-btn" id="mobile-logout-btn">
+        <span class="logout-icon">🚪</span> Logout
       </button>
       <!-- Exit fullscreen button (hidden by default) - Shows as X in circle -->
       <button class="exit-fullscreen-btn hidden" id="exit-fullscreen-btn" aria-label="Exit Fullscreen"></button>
@@ -213,6 +217,36 @@
       document.addEventListener('mozfullscreenchange', handleFullscreenChange);
       document.addEventListener('MSFullscreenChange', handleFullscreenChange);
     });
+
+    // Home button functionality - clear state and navigate home
+    const homeBtn = document.getElementById('home-btn');
+    const mobileHomeBtn = document.getElementById('mobile-home-btn');
+    
+    function goHome() {
+      // Clear arcade state from localStorage if it exists
+      localStorage.removeItem('arcade-active');
+      // Force clean navigation to home
+      window.location.href = '/';
+    }
+    
+    if (homeBtn) homeBtn.addEventListener('click', goHome);
+    if (mobileHomeBtn) mobileHomeBtn.addEventListener('click', goHome);
+
+    // Logout button functionality - clear session and navigate home
+    const logoutBtn = document.getElementById('logout-btn');
+    const mobileLogoutBtn = document.getElementById('mobile-logout-btn');
+    
+    function logout() {
+      // Clear all authentication data
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('arcade-active');
+      // Navigate to home page
+      window.location.href = '/';
+    }
+    
+    if (logoutBtn) logoutBtn.addEventListener('click', logout);
+    if (mobileLogoutBtn) mobileLogoutBtn.addEventListener('click', logout);
   </script>
 </body>
 </html>
