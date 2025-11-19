@@ -1,0 +1,13 @@
+[Unit]
+Description=Homepage startup service - cleanup ports and bring up docker-compose
+After=network-online.target docker.service
+Wants=network-online.target docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/bin/homepage-startup.sh
+TimeoutStartSec=0
+
+[Install]
+WantedBy=multi-user.target

@@ -188,7 +188,8 @@ def _send_email(subject: str, body: str, to: str) -> None:
             return
         if SMTP_USER and SMTP_PASS:
             with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as s:
-                s.starttls() if os.getenv("SMTP_TLS", "1") == "1" else None
+                if os.getenv("SMTP_TLS", "1") == "1":
+                    s.starttls()
                 s.login(SMTP_USER, SMTP_PASS)
                 s.send_message(msg)
         else:
@@ -428,7 +429,8 @@ def contact(req: ContactRequest):
 
         if SMTP_USER and SMTP_PASS:
             with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as s:
-                s.starttls() if os.getenv("SMTP_TLS", "1") == "1" else None
+                if os.getenv("SMTP_TLS", "1") == "1":
+                    s.starttls()
                 s.login(SMTP_USER, SMTP_PASS)
                 s.send_message(msg)
         else:

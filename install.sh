@@ -156,6 +156,51 @@ while true; do
     fi
 done
 
+# SMTP Configuration
+echo ""
+echo -e "${CYAN}📧 Email/SMTP Setup (for contact form)${NC}"
+echo "Configure SMTP to enable email sending from contact form"
+read -p "Configure SMTP now? (yes/no) [default: no]: " CONFIGURE_SMTP
+CONFIGURE_SMTP=${CONFIGURE_SMTP:-no}
+
+if [ "$CONFIGURE_SMTP" = "yes" ]; then
+    echo ""
+    echo "Common SMTP providers:"
+    echo "  Gmail:     smtp.gmail.com (port 587, use app password)"
+    echo "  Outlook:   smtp.office365.com (port 587)"
+    echo "  SendGrid:  smtp.sendgrid.net (port 587)"
+    echo ""
+    
+    read -p "SMTP Host (e.g., smtp.gmail.com): " SMTP_HOST
+    SMTP_HOST=${SMTP_HOST:-smtp.gmail.com}
+    
+    read -p "SMTP Port [default: 587]: " SMTP_PORT
+    SMTP_PORT=${SMTP_PORT:-587}
+    
+    read -p "SMTP Username (usually your email): " SMTP_USER
+    
+    read -sp "SMTP Password (app password for Gmail): " SMTP_PASS
+    echo ""
+    
+    read -p "Sender email address (From address): " MAIL_FROM
+    MAIL_FROM=${MAIL_FROM:-$ADMIN_EMAIL}
+    
+    read -p "Recipient email (where contact form sends to) [default: $ADMIN_EMAIL]: " MAIL_TO
+    MAIL_TO=${MAIL_TO:-$ADMIN_EMAIL}
+    
+    SMTP_TLS=1
+else
+    SMTP_HOST="localhost"
+    SMTP_PORT="25"
+    SMTP_USER=""
+    SMTP_PASS=""
+    MAIL_FROM="noreply@${DOMAIN}"
+    MAIL_TO="${ADMIN_EMAIL}"
+    SMTP_TLS="0"
+    echo -e "${YELLOW}⚠ SMTP not configured. Email sending will be disabled.${NC}"
+    echo -e "${YELLOW}  You can configure it later in backend/.env${NC}"
+fi
+
 # Ask about database
 echo ""
 echo -e "${CYAN}💾 Database Setup${NC}"
@@ -182,6 +227,11 @@ echo -e "  Server IP:      ${GREEN}$SERVER_IP${NC}"
 echo -e "  Domain:         ${GREEN}$DOMAIN${NC}"
 echo -e "  Admin User:     ${GREEN}$ADMIN_USER${NC}"
 echo -e "  Admin Email:    ${GREEN}$ADMIN_EMAIL${NC}"
+if [ "$CONFIGURE_SMTP" = "yes" ]; then
+    echo -e "  SMTP:           ${GREEN}Configured ($SMTP_HOST:$SMTP_PORT)${NC}"
+else
+    echo -e "  SMTP:           ${YELLOW}Not configured${NC}"
+fi
 if [ "$DB_CHOICE" = "1" ]; then
     echo -e "  Database:       ${YELLOW}Fresh (will delete existing)${NC}"
 else
@@ -265,6 +315,13 @@ SECRET_KEY=$(openssl rand -hex 32)
 ADMIN_EMAIL=$ADMIN_EMAIL
 SERVER_IP=$SERVER_IP
 DOMAIN=$DOMAIN
+SMTP_HOST=$SMTP_HOST
+SMTP_PORT=$SMTP_PORT
+SMTP_USER=$SMTP_USER
+SMTP_PASS=$SMTP_PASS
+MAIL_FROM=$MAIL_FROM
+MAIL_TO=$MAIL_TO
+SMTP_TLS=$SMTP_TLS
 EOF
 
 # Frontend .env
