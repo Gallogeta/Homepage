@@ -63,7 +63,7 @@ services:
     depends_on:
       - nginx
     command: >
-      goaccess /var/log/nginx/access.log 
+      /var/log/nginx/access.log 
       -o /report/index.html 
       --log-format=COMBINED 
       --real-time-html 
