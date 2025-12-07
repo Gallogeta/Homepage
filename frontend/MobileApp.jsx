@@ -142,6 +142,7 @@ export default function MobileApp() {
     { key: "work", label: "💼 Work History" },
     { key: "gallery", label: "🖼️ Gallery" },
     { key: "contact", label: "📞 Contact" },
+    { key: "ai-chatroom", label: "🤖 AI CHATROOM", external: "https://woofc.itsusi.eu" },
     { key: "arcade", label: "🎮 Arcade", external: "/arcade.html" },
   ];
 
