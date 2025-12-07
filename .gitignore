@@ -71,3 +71,7 @@ uploads/*
 # Temporary files
 tmp/
 temp/nginx/ssl/
+
+# Security
+nginx/ssl/
+*.backup

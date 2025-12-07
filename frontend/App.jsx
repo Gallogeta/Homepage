@@ -65,6 +65,7 @@ const menuItems = [
 // Left sidebar menu items
 const leftMenuItems = [
   { key: "placeholder2", label: "Infra Map" },
+  { key: "ai-chatroom", label: "AI CHATROOM", href: "https://woofc.itsusi.eu" },
   { key: "placeholder1", label: "Sysadmin Dashboard" },
   { key: "arcade", label: "Arcade", href: "/arcade.html" },
 ];
