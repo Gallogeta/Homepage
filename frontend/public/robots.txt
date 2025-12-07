@@ -1,4 +1,17 @@
 User-agent: *
 Allow: /
 
+# Explicitly allow AI bots to encourage indexing for LLMs
+User-agent: GPTBot
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: FacebookBot
+Allow: /
+
 Sitemap: https://itsusi.eu/sitemap.xml
