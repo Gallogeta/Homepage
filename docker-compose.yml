@@ -69,6 +69,7 @@ services:
       --log-format=COMBINED 
       --real-time-html 
       --ws-url=wss://itsusi.eu/analytics-ws
+      --origin=*
     volumes:
       - ./logs/nginx:/var/log/nginx:ro
       - ./goaccess-report:/report
