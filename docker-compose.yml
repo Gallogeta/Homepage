@@ -50,6 +50,7 @@ services:
       - frontend_build:/var/www/build:ro  # Serve React build files
       - ./logs/nginx:/var/log/nginx  # Persist logs for analysis
       - ./goaccess-report:/var/www/goaccess:ro # Serve analytics report
+      - ./nginx/.htpasswd:/etc/nginx/.htpasswd:ro # Password protection
     networks:
       - homepage_network
     depends_on:
