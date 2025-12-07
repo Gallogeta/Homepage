@@ -48,11 +48,31 @@ services:
       - uploads_data:/var/www/uploads:ro  # Serve uploads directly
       - ./frontend/public:/var/www/html:ro   # Serve public files directly
       - frontend_build:/var/www/build:ro  # Serve React build files
+      - ./logs/nginx:/var/log/nginx  # Persist logs for analysis
+      - ./goaccess-report:/var/www/goaccess:ro # Serve analytics report
     networks:
       - homepage_network
     depends_on:
       - backend
       - frontend
+
+  goaccess:
+    image: allinurl/goaccess
+    container_name: homepage_goaccess
+    restart: unless-stopped
+    depends_on:
+      - nginx
+    command: >
+      goaccess /var/log/nginx/access.log 
+      -o /report/index.html 
+      --log-format=COMBINED 
+      --real-time-html 
+      --ws-url=wss://itsusi.eu/analytics-ws
+    volumes:
+      - ./logs/nginx:/var/log/nginx:ro
+      - ./goaccess-report:/report
+    networks:
+      - homepage_network
 
 volumes:
   uploads_data:
