@@ -26,11 +26,17 @@ while read -r ip; do
   echo "set_real_ip_from $ip;" >> "$OUT_FILE"
 done < "$TMP_DIR/ips-v6"
 
-# Ensure header lines are also present
-if ! grep -q "real_ip_header CF-Connecting-IP;" "$OUT_FILE"; then
-  echo "real_ip_header CF-Connecting-IP;" >> "$OUT_FILE"
-  echo "real_ip_recursive on;" >> "$OUT_FILE"
-fi
+# Note: `real_ip_header` and `real_ip_recursive` are set in nginx/nginx.conf to avoid duplication
 
 rm -rf "$TMP_DIR"
 echo "Wrote $OUT_FILE"
+ 
+# If nginx container exists, copy the include into the running container so nginx can load it immediately
+if docker ps --format '{{.Names}}' | grep -q '^homepage_nginx$'; then
+  echo "Copying $OUT_FILE into running container homepage_nginx:/etc/nginx/cloudflare-ips.conf"
+  docker cp "$OUT_FILE" homepage_nginx:/etc/nginx/cloudflare-ips.conf || echo "docker cp failed; you may need to copy file manually"
+  echo "Testing nginx config inside container..."
+  docker exec homepage_nginx nginx -t || echo "nginx test failed inside container; check logs"
+  echo "Reloading nginx inside container..."
+  docker exec homepage_nginx nginx -s reload || echo "nginx reload failed"
+fi
