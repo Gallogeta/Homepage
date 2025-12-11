@@ -8,6 +8,7 @@ sudo apt-get update
 sudo apt-get install -y fail2ban
 
 # Create custom jail configuration for Homepage
+[ -f /etc/fail2ban/jail.d/homepage.conf ] && sudo mv /etc/fail2ban/jail.d/homepage.conf /etc/fail2ban/jail.d/homepage.conf.bak || true
 sudo tee /etc/fail2ban/jail.d/homepage.conf > /dev/null <<'EOF'
 [nginx-http-auth]
 enabled = true
@@ -49,6 +50,10 @@ logpath = /var/log/nginx/access.log
 maxretry = 2
 findtime = 600
 bantime = 86400
+
+# Whitelist local/trusted IP(s) to exempt from bans
+# Replace or extend the list as needed. This will be updated by the setup script.
+ignoreip = 127.0.0.1/8 ::1 81.197.254.238 192.168.0.0/16 10.0.0.0/8
 
 # Custom filter for Homepage API abuse
 [homepage-api-abuse]
@@ -109,6 +114,11 @@ EOF
 # Enable and start fail2ban
 sudo systemctl enable fail2ban
 sudo systemctl restart fail2ban
+ 
+# Make helper scripts executable
+if [[ -f "/home/gallo/Homepage/scripts/unban-ip.sh" ]]; then
+	sudo chmod +x /home/gallo/Homepage/scripts/unban-ip.sh
+fi
 
 echo ""
 echo "✅ Fail2ban setup complete!"
