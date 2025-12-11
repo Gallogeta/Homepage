@@ -250,3 +250,34 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ---
 
 **Disclaimer:** This project is for educational purposes. Ensure you own or have the right to use any ROM files.
+
+## Recent Security Hardening (Dec 2025)
+
+The project has undergone security hardening to reduce bot, AI scanner and unauthorized access to sensitive endpoints and data. Changes made include:
+
+- Nginx hardening and content security headers:
+        - Block direct access to sensitive resources (.env, .git config, admin APIs) and paths like `/analytics-ws`, `/socket.io/` unless authenticated/authorized.
+        - Added `X-Robots-Tag: noindex, nofollow` headers on sensitive endpoints.
+        - Implemented origin check and rate-limiting for websocket handshakes.
+        - Denied `.map` source maps from being served publicly.
+
+- Fail2Ban configuration:
+        - new `homepage-sensitive` jail to ban IPs repeatedly requesting sensitive endpoints (3 strikes -> 24 hours ban).
+        - additional jails to protect rate-limits and login endpoints.
+
+- Analytics (GoAccess):
+        - WebSocket proxied through Nginx (on port 443) to avoid exposing the analytics server port to the public.
+        - GoAccess configured to ignore crawlers so real visitors are clearer in the report.
+
+- Frontend build:
+        - Source maps disabled in production builds to avoid exposing raw source code.
+
+Notes:
+- Sensitive items like `nginx/ssl/`, `nginx/.htpasswd`, `backend/.env`, and `backups/` are now ignored in `.gitignore` and will not be pushed.
+- If you have committed secrets in earlier commits, consider using a history rewrite (BFG or git-filter-repo) or rotating the secrets.
+
+Follow-up recommendations:
+- Use a WAF (Cloudflare) and its Bot Management for production systems.
+- Verify Google crawler requests by reverse-DNS or IP block check instead of UA alone.
+- Consider a separate subdomain for analytics (isolated CSP and reduced risk).
+

@@ -75,3 +75,8 @@ temp/nginx/ssl/
 # Security
 nginx/ssl/
 *.backup
+nginx/.htpasswd
+goaccess-report/
+backups/
+backend/.env
+backend/data/

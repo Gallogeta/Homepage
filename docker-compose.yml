@@ -69,10 +69,17 @@ services:
       --log-format=COMBINED 
       --real-time-html 
       --ws-url=wss://itsusi.eu/analytics-ws
-      --origin=*
+      --ignore-crawlers
+      --port=443
+      --origin=https://itsusi.eu
+      --addr=0.0.0.0
+      --debug-file=/report/goaccess_debug.log
+      --invalid-requests=/report/goaccess_invalid.log
     volumes:
       - ./logs/nginx:/var/log/nginx:ro
       - ./goaccess-report:/report
+    ports:
+      - "7890:443"
     networks:
       - homepage_network
 

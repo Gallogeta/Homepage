@@ -85,6 +85,27 @@ failregex = ^<HOST>.*"POST /(login|register|token).* HTTP.*" (401|403)
 ignoreregex =
 EOF
 
+# Create filter for sensitive endpoint probes
+sudo tee /etc/fail2ban/filter.d/homepage-sensitive.conf > /dev/null <<'EOF'
+[Definition]
+# Detect repeated requests to endpoints we protect (analytics websocket, socket.io, admin APIs, .git/.env accesses, downloads/copy probes)
+failregex = ^<HOST> - .*"(GET|POST|HEAD|OPTIONS).*/(socket.io|analytics-ws|analytics-w|chatroom\.html|api/admin|api/admin/users|\.git|\.env|\.git/config|download|copy).*(HTTP|)".*" 403
+ignoreregex =
+EOF
+
+# Add a new jail in the homepage jail file
+sudo tee -a /etc/fail2ban/jail.d/homepage.conf > /dev/null <<'EOF'
+
+[homepage-sensitive]
+enabled = true
+port = http,https
+filter = homepage-sensitive
+logpath = /var/log/nginx/access.log
+maxretry = 3
+findtime = 600
+bantime = 86400
+EOF
+
 # Enable and start fail2ban
 sudo systemctl enable fail2ban
 sudo systemctl restart fail2ban

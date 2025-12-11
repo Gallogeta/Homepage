@@ -8,4 +8,7 @@ export default defineConfig({
     port: 3000,
     host: '0.0.0.0', // Allow access from LAN
   },
+  build: {
+    sourcemap: false, // disable source maps for production to avoid exposing source
+  },
 });
