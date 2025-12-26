@@ -94,7 +94,7 @@ EOF
 sudo tee /etc/fail2ban/filter.d/homepage-sensitive.conf > /dev/null <<'EOF'
 [Definition]
 # Detect repeated requests to endpoints we protect (analytics websocket, socket.io, admin APIs, .git/.env accesses, downloads/copy probes)
-failregex = ^<HOST> - .*"(GET|POST|HEAD|OPTIONS).*/(socket.io|analytics-ws|analytics-w|chatroom\.html|api/admin|api/admin/users|\.git|\.env|\.git/config|download|copy).*(HTTP|)".*" 403
+failregex = ^<HOST> - .*"(GET|POST|HEAD|OPTIONS).*/(socket.io|analytics-ws|analytics-w|analytics-report|chatroom\.html|api/admin|api/admin/users|\.git|\.env|\.git/config|download|copy).*(HTTP|)".*" 403
 ignoreregex =
 EOF
 

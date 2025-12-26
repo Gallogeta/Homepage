@@ -66,6 +66,7 @@ const menuItems = [
 const leftMenuItems = [
   { key: "placeholder2", label: "Infra Map" },
   { key: "ai-chatroom", label: "AI CHATROOM", href: "https://woofc.itsusi.eu" },
+  { key: "trinco", label: "TRINCO", href: "https://trinco.itsusi.eu" },
   { key: "placeholder1", label: "Sysadmin Dashboard" },
   { key: "arcade", label: "Arcade", href: "/arcade.html" },
 ];
@@ -1029,6 +1030,11 @@ function DesktopApp() {
       const u = getUserFromToken(data.access_token);
       setUser(u);
       setShowAuth(false);
+      try {
+        // Set a non-sensitive cookie flag so nginx can detect authenticated users
+        // Use SameSite=None so the cookie is sent on XHR/fetch across subdomains
+        document.cookie = "itsusi_logged_in=1; Path=/; Max-Age=86400; Domain=.itsusi.eu; Secure; SameSite=None";
+      } catch (e) {}
     } else if (data.msg) {
       setAuthMode("login");
     }
@@ -1039,6 +1045,10 @@ function DesktopApp() {
     setUser(null);
       setActive("home");
       localStorage.setItem("activePage", "home");
+      try {
+        // Remove the login cookie when logging out
+        document.cookie = "itsusi_logged_in=; Path=/; Max-Age=0; Domain=.itsusi.eu; Secure; SameSite=None";
+      } catch (e) {}
   }
 
   const filteredMenuItems = user && user.username === "gallo"
@@ -1094,6 +1104,33 @@ function DesktopApp() {
 
   return (
     <div className="min-h-screen flex bg-black text-gold font-sans relative overflow-x-hidden" style={{minHeight: '100vh', height: '100vh', overflow: 'auto'}}>
+      <style>{`
+        /* TRINCO shiny button */
+        .trinko-btn {
+          background: linear-gradient(90deg, #ff6ec7 0%, #9b59ff 40%, #ffd700 80%);
+          background-size: 200% 200%;
+          color: #111827; /* dark text for gold contrast */
+          font-weight: 800;
+          border: none;
+          padding: 0.5rem 0.9rem;
+          border-radius: 0.5rem;
+          box-shadow: 0 6px 22px rgba(155,89,255,0.18), 0 0 18px rgba(255,110,199,0.12) inset;
+          transition: transform 180ms cubic-bezier(.2,.9,.2,1), box-shadow 180ms;
+          cursor: pointer;
+        }
+        .trinko-btn:hover {
+          transform: translateY(-3px) scale(1.02);
+          box-shadow: 0 14px 36px rgba(155,89,255,0.28), 0 0 28px rgba(255,110,199,0.18) inset;
+        }
+        @keyframes trinko-shine {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        .trinko-btn {
+          animation: trinko-shine 3.5s ease-in-out infinite;
+        }
+      `}</style>
       <FutureBg />
       {/* Mobile Menu Toggle */}
       <button 
@@ -1135,13 +1172,12 @@ function DesktopApp() {
           {leftMenuItems.map(item => (
             item.href ? (
               <React.Fragment key={item.key}>
-                {/* Only show arcade button if user is logged in */}
-                {(item.key !== "arcade" || user) && (
+                {/* Only show arcade and TRINCO buttons to logged-in users */}
+                {((item.key !== "arcade" && item.key !== "trinco") || user) && (
                   <button
                     className={
-                      "menu-btn" + 
-                      (item.key === "arcade" ? " " : "") +
-                      (item.key === "arcade" ? "arcade-btn" : "")
+                      "menu-btn" + (item.key === 'trinco' ? ' trinko-btn' : '') +
+                      (item.key === "arcade" ? " arcade-btn" : "")
                     }
                     style={item.key === "arcade" ? {
                       border: '2px solid #00ff00',
@@ -1152,6 +1188,9 @@ function DesktopApp() {
                       if (item.key === "arcade") {
                         // Force full page navigation to arcade.html (bypass React router)
                         window.location.replace('/arcade.html');
+                      } else if (item.key === 'trinco') {
+                        // Open TRINCO subdomain in new tab
+                        window.open(item.href, '_blank', 'noopener,noreferrer');
                       } else {
                         window.open(item.href, '_blank', 'noopener,noreferrer');
                       }

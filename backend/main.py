@@ -1242,6 +1242,12 @@ async def get_page(page_key: str, db: Session = Depends(get_db)):
 async def get_status():
     return {"status": "online", "version": "1.0"}
 
+
+# Return current authenticated username (uses bearer token)
+@app.get("/api/me")
+def api_me(username: str = Depends(get_current_user)):
+    return {"username": username}
+
 @app.get("/users/me")
 async def get_current_user():
     # Mock user for now
